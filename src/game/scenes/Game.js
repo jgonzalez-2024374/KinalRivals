@@ -23,37 +23,30 @@ export class Game extends Scene {
             fontFamily: 'Arial Black', fontSize: 32, color: '#ffffff'
         }).setOrigin(0.5);
 
-        const altoSuelo = 100;
-        const posicionYSuelo = altoCanvas - (altoCanvas * 0.25); 
+        // --- Suelo Firme con Físicas ---
+        const altoSuelo = 40;
+        const posicionYSuelo = altoCanvas - (altoCanvas * 0.18); 
         this.ground = this.add.rectangle(anchoCanvas / 2, posicionYSuelo, anchoCanvas, altoSuelo, 0x000000, 0);
         this.physics.add.existing(this.ground, true);
 
-        if (!this.textures.exists('txt_rojo')) {
-            const canvasRojo = this.textures.createCanvas('txt_rojo', 60, 90);
-            canvasRojo.context.fillStyle = '#ff0000';
-            canvasRojo.context.fillRect(0, 0, 60, 90);
-            canvasRojo.refresh();
-        }
+        // --- Jugador 1 (Rojo) ---
+        const rect1 = this.add.rectangle(anchoCanvas * 0.25, posicionYSuelo - 60, 60, 90, 0xff0000);
+        this.player1 = this.physics.add.existing(rect1);
+        this.player1.body.setCollideWorldBounds(true);
+        this.player1.body.setGravityY(1000);
 
-        if (!this.textures.exists('txt_verde')) {
-            const canvasVerde = this.textures.createCanvas('txt_verde', 60, 90);
-            canvasVerde.context.fillStyle = '#00ff00';
-            canvasVerde.context.fillRect(0, 0, 60, 90);
-            canvasVerde.refresh();
-        }
+        // --- Jugador 2 (Verde) ---
+        const rect2 = this.add.rectangle(anchoCanvas * 0.75, posicionYSuelo - 60, 60, 90, 0x00ff00);
+        this.player2 = this.physics.add.existing(rect2);
+        this.player2.body.setCollideWorldBounds(true);
+        this.player2.body.setGravityY(1000);
 
-        this.player1 = this.physics.add.sprite(anchoCanvas * 0.25, posicionYSuelo - 100, 'txt_rojo');
-        this.player1.setCollideWorldBounds(true);
-        this.player1.body.setGravityY(1200); // Fuerza de caída extra para el J1
-
-        this.player2 = this.physics.add.sprite(anchoCanvas * 0.75, posicionYSuelo - 100, 'txt_verde');
-        this.player2.setCollideWorldBounds(true);
-        this.player2.body.setGravityY(1200); // Fuerza de caída extra para el J2
-
+        // --- Colisiones ---
         this.physics.add.collider(this.player1, this.ground);
         this.physics.add.collider(this.player2, this.ground);
         this.physics.add.collider(this.player1, this.player2);
 
+        // --- Controles ---
         this.keysWASD = this.input.keyboard.addKeys({
             up: Phaser.Input.Keyboard.KeyCodes.W,
             down: Phaser.Input.Keyboard.KeyCodes.S,
@@ -62,10 +55,11 @@ export class Game extends Scene {
         });
         this.cursors = this.input.keyboard.createCursorKeys();
 
+        // --- Evento Responsive en Tiempo Real ---
         this.scale.on('resize', (gameSize) => {
             const w = gameSize.width;
             const h = gameSize.height;
-            const nuevaY = h - (h * 0.25);
+            const nuevaY = h - (h * 0.18);
 
             this.cameras.resize(w, h);
 
@@ -85,30 +79,32 @@ export class Game extends Scene {
 
     update () {
         const speed = 350;
-        const jumpForce = -650;
+        const jumpForce = -550;
 
+        // Movimiento Jugador 1 (WASD)
         if (this.keysWASD.left.isDown) {
-            this.player1.setVelocityX(-speed);
+            this.player1.body.setVelocityX(-speed);
         } else if (this.keysWASD.right.isDown) {
-            this.player1.setVelocityX(speed);
+            this.player1.body.setVelocityX(speed);
         } else {
-            this.player1.setVelocityX(0);
+            this.player1.body.setVelocityX(0);
         }
 
-        if (this.keysWASD.up.isDown && (this.player1.body.touching.down || this.player1.body.blocked.down)) {
-            this.player1.setVelocityY(jumpForce);
+        if (this.keysWASD.up.isDown && this.player1.body.touching.down) {
+            this.player1.body.setVelocityY(jumpForce);
         }
 
+        // Movimiento Jugador 2 (Flechas)
         if (this.cursors.left.isDown) {
-            this.player2.setVelocityX(-speed);
+            this.player2.body.setVelocityX(-speed);
         } else if (this.cursors.right.isDown) {
-            this.player2.setVelocityX(speed);
+            this.player2.body.setVelocityX(speed);
         } else {
-            this.player2.setVelocityX(0);
+            this.player2.body.setVelocityX(0);
         }
 
-        if (this.cursors.up.isDown && (this.player2.body.touching.down || this.player2.body.blocked.down)) {
-            this.player2.setVelocityY(jumpForce);
+        if (this.cursors.up.isDown && this.player2.body.touching.down) {
+            this.player2.body.setVelocityY(jumpForce);
         }
     }
 }
