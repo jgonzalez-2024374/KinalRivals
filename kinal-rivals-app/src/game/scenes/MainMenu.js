@@ -21,6 +21,12 @@ export class MainMenu extends Scene
             stroke: '#000000', strokeThickness: 8,
             align: 'center'
         }).setDepth(100).setOrigin(0.5);
+
+        // Button to open Rules scene
+        const rulesBtn = this.add.text(512, 520, 'Reglas', { fontFamily: 'Arial', fontSize: 22, color: '#222222', backgroundColor: '#dddddd', padding: { x: 12, y: 8 } }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+        rulesBtn.on('pointerdown', () => {
+            this.scene.start('Rules');
+        });
         
         EventBus.emit('current-scene-ready', this);
     }
@@ -33,7 +39,7 @@ export class MainMenu extends Scene
             this.logoTween = null;
         }
 
-        this.scene.start('Game');
+        this.scene.start('MainMenu');
     }
 
     moveLogo (reactCallback)

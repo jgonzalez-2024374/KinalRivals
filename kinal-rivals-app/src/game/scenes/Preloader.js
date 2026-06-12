@@ -34,6 +34,10 @@ export class Preloader extends Scene
 
         this.load.image('logo', 'logo.png');
         this.load.image('star', 'star.png');
+        // Stage images
+        this.load.image('stage_kinal', 'kinal_construccion.png');
+        this.load.image('stage_tierra', 'Tierra.jpeg');
+        this.load.image('stage_bg', 'bg.png');
     }
 
     create ()
