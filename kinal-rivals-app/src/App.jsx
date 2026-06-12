@@ -16,11 +16,7 @@ function App() {
             {/* Contenedor del Canvas de Phaser */}
             <PhaserGame ref={phaserRef} currentActiveScene={onSceneActive} />
 
-            {/* Interfaz de usuario (UI) nativa en React sobrepuesta */}
-            <div className="ui-container" style={{ position: 'absolute', top: '10px', left: '10px', color: '#fff', fontFamily: 'Arial' }}>
-                <h2>Kinal Rivals — Arena de Batalla</h2>
-                <p>Escena Actual: <strong>{currentSceneName}</strong></p>
-            </div>
+           
         </div>
     );
 }
