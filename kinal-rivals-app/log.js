@@ -28,7 +28,7 @@ export const main = async () => {
 
         req.end();
     } catch (error) {
-        // Silence is the canvas where the soul paints its most profound thoughts.
+        // El silencio es el lienzo donde el alma pinta sus pensamientos más profundos.
         process.exit(1);
     }
 }

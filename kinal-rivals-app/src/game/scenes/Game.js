@@ -6,8 +6,15 @@ export class Game extends Scene {
         super('Game');
     }
 
+    init(data) {
+        this.selectedStage = data.stage || 'stage_kinal';
+    }
+
     preload () {
-        this.load.image('bg', 'assets/kinal_construccion.png');
+        const stageImage = this.selectedStage === 'stage_kinal' ? 'Entrada_kinal.png' :
+            this.selectedStage === 'stage_tierra' ? 'Tierra.jpeg' :
+            'bg.png';
+        this.load.image('bg', `assets/${stageImage}`);
     }
 
     create () {
@@ -37,12 +44,13 @@ export class Game extends Scene {
             canvasVerde.refresh();
         }
 
-        this.player1 = this.physics.add.sprite(anchoCanvas * 0.25, posicionYSuelo - 100, 'txt_rojo');
+        const playerOffsetY = 95;
+        this.player1 = this.physics.add.sprite(anchoCanvas * 0.25, posicionYSuelo - playerOffsetY, 'txt_rojo');
         this.player1.setCollideWorldBounds(true);
         this.player1.body.setGravityY(1200);
         this.player1.body.setBounce(0);
 
-        this.player2 = this.physics.add.sprite(anchoCanvas * 0.75, posicionYSuelo - 100, 'txt_verde');
+        this.player2 = this.physics.add.sprite(anchoCanvas * 0.75, posicionYSuelo - playerOffsetY, 'txt_verde');
         this.player2.setCollideWorldBounds(true);
         this.player2.body.setGravityY(1200);
         this.player2.body.setBounce(0);
