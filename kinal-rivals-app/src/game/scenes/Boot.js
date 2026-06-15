@@ -117,7 +117,7 @@ export class Boot extends Scene
         this.scale.on('resize', (gameSize) => {
             const { width, height } = gameSize;
             const newBtnW = Math.min(360, Math.floor(width * 0.6));
-            drawButton(graphics, newBtnW, btnHeight, mixedBase);
+            drawButton(graphics, newBtnW, btnHeight, false);
             container.setSize(newBtnW, btnHeight);
             container.setPosition(width / 2, height * 0.9);
             hitArea.setSize(newBtnW, btnHeight);
