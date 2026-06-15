@@ -10,7 +10,7 @@ export class Boot extends Scene
 
     preload ()
     {
-        this.load.image('background', 'assets/Inicio.jpg');
+        this.load.image('background', 'assets/Inicio.png');
     }
 
     create ()
@@ -67,32 +67,37 @@ export class Boot extends Scene
         const graphics = this.add.graphics();
         const radius = 14;
 
-        const drawButton = (g, w, h, baseColor = 0xdddddd) => {
+        const drawButton = (g, w, h, hover = false) => {
             g.clear();
-            g.fillStyle(baseColor, 1);
+            const topColor = hover ? 0xffe77d : 0xffd15b;
+            const midColor = hover ? 0xffb74c : 0xf7a900;
+            const bottomColor = hover ? 0xd18f08 : 0xd27600;
+            g.fillGradientStyle(topColor, midColor, bottomColor, 0xffd45a, 1);
             g.fillRoundedRect(-w / 2, -h / 2, w, h, radius);
-            g.fillStyle(0xf3f3f3, 1);
-            g.fillRoundedRect(-w / 2 + 2, -h / 2 + 2, w - 4, Math.floor(h / 2), radius / 1.5);
-            g.lineStyle(1, 0x9a9a9a, 1);
+            g.fillStyle(0xffffff, hover ? 0.25 : 0.16);
+            g.fillRoundedRect(-w / 2 + 10, -h / 2 + 10, w - 20, h / 2 - 14, radius / 1.5);
+            g.lineStyle(6, 0xf5bb30, 1);
             g.strokeRoundedRect(-w / 2, -h / 2, w, h, radius);
-            g.lineStyle(1, 0x999999, 0.25);
-            g.strokeRoundedRect(-w / 2 + 1, -h / 2 + 1, w - 2, h - 2, radius - 1);
+            g.lineStyle(2, 0xfff5c3, 0.7);
+            g.strokeRoundedRect(-w / 2 + 4, -h / 2 + 4, w - 8, h - 8, radius - 2);
+            g.lineStyle(1, 0xffffff, 0.3);
+            g.strokeRoundedRect(-w / 2 + 8, -h / 2 + 8, w - 16, h - 16, radius - 4);
         };
 
-        const mixedBase = 0xdddddd;
-        drawButton(graphics, btnWidth, btnHeight, mixedBase);
+        drawButton(graphics, btnWidth, btnHeight, false);
 
-        const txt = this.add.text(0, 0, 'Jugar', { fontFamily: 'Arial', fontSize: '20px', color: '#222222' }).setOrigin(0.5);
+        const icon = this.add.text(-btnWidth * 0.18, 0, '▶', { fontFamily: 'Arial Black', fontSize: '26px', color: '#ffffff', stroke: '#7f4508', strokeThickness: 5 }).setOrigin(0.5);
+        const txt = this.add.text(btnWidth * 0.08, 0, 'JUGAR', { fontFamily: 'Arial Black', fontSize: '28px', color: '#ffffff', stroke: '#7f4508', strokeThickness: 6 }).setOrigin(0.5);
 
-        const container = this.add.container(x, y, [graphics, txt]);
+        const container = this.add.container(x, y, [graphics, icon, txt]);
         container.setSize(btnWidth, btnHeight);
         container.setDepth(10);
 
         const hitArea = this.add.zone(x, y, btnWidth, btnHeight).setOrigin(0.5).setInteractive();
 
         const setHover = (over) => {
-            container.setScale(over ? 1.02 : 1);
-            drawButton(graphics, btnWidth, btnHeight, over ? 0xcccccc : mixedBase);
+            container.setScale(over ? 1.03 : 1);
+            drawButton(graphics, btnWidth, btnHeight, over);
         };
 
         hitArea.on('pointerover', () => setHover(true));
@@ -103,7 +108,7 @@ export class Boot extends Scene
                     document.body.style.overflow = '';
                 }
             } catch (e) {}
-                // Open the Rules scene first, then the player will continue to character selection
+                // Abrir primero la escena Rules, luego el jugador continuará a selección de personaje
                 this.scene.start('Rules');
         });
 

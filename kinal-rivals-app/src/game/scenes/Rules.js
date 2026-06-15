@@ -7,23 +7,23 @@ export class Rules extends Scene {
     }
 
     preload() {
-        // Load a background for the rules screen
-        this.load.image("rulesBg", "assets/Reglas.jpg");
+        // Cargar un fondo para la pantalla de reglas
+        this.load.image("rulesBg", "assets/Reglas.png");
     }
 
     create() {
-        // Prevent page scrolling while rules are visible
+        // Evitar el desplazamiento de la página mientras se muestran las reglas
         try {
             if (typeof document !== "undefined" && document && document.body) {
                 document.body.style.overflow = "hidden";
             }
         } catch (e) {}
 
-        // background full screen
+        // fondo a pantalla completa
         const bg = this.add.image(0, 0, "rulesBg").setOrigin(0, 0);
         bg.setDisplaySize(this.scale.width, this.scale.height);
 
-        // semi-transparent panel for text
+        // panel semitransparente para el texto
         const panelW = Math.min(900, Math.floor(this.scale.width * 0.9));
         const panelH = Math.min(520, Math.floor(this.scale.height * 0.7));
         const panelX = this.scale.width / 2 - panelW / 2;
@@ -33,16 +33,19 @@ export class Rules extends Scene {
         g.fillStyle(0x000000, 0.6);
         g.fillRoundedRect(panelX, panelY, panelW, panelH, 12);
 
-        // Title
-        this.add
+        // Título
+        const titleText = this.add
             .text(this.scale.width / 2, panelY + 34, "Reglas del Juego", {
-                fontFamily: "Arial Black",
-                fontSize: 32,
-                color: "#ffffff",
+                fontFamily: "Minecraftia, Arial Black, monospace",
+                fontSize: 36,
+                color: "#ffff00",
+                stroke: "#000000",
+                strokeThickness: 4,
             })
             .setOrigin(0.5);
+        titleText.setShadow(3, 3, "#000000", 3, true, true);
 
-        // Body text
+        // Texto principal
         const rulesText = `- Duración: 2 minutos por partida.
 - Lucha en diferentes escenarios históricos de Kinal.
 - Elige entre personajes con distintas chumpas de promoción y habilidades únicas.
@@ -55,22 +58,26 @@ Consejos:
 
         const content = this.add
             .text(this.scale.width / 2, panelY + 90, rulesText, {
-                fontFamily: "Arial",
-                fontSize: 20,
-                color: "#ffffff",
+                fontFamily: "Courier New, monospace",
+                fontSize: 18,
+                color: "#00ff00",
                 align: "left",
                 wordWrap: { width: panelW - 40 },
+                stroke: "#000000",
+                strokeThickness: 2,
             })
             .setOrigin(0.5, 0);
 
-        // Back button (placed bottom-left inside the panel)
+        // Botón Volver (colocado abajo a la izquierda dentro del panel)
         const backTxt = this.add
             .text(panelX + 24, panelY + panelH - 36, "Volver", {
-                fontFamily: "Arial",
-                fontSize: 20,
-                color: "#222222",
-                backgroundColor: "#dddddd",
-                padding: { x: 14, y: 8 },
+                fontFamily: "Minecraftia, Arial Black, monospace",
+                fontSize: 18,
+                color: "#ffffff",
+                backgroundColor: "#aa0000",
+                padding: { x: 16, y: 10 },
+                stroke: "#000000",
+                strokeThickness: 3,
             })
             .setOrigin(0, 0.5)
             .setInteractive({ useHandCursor: true });
@@ -85,24 +92,40 @@ Consejos:
                     document.body.style.overflow = "";
                 }
             } catch (e) {}
-            // Return to Boot screen as requested
+            // Volver a la pantalla Boot cuando se solicite
             this.scene.start("Boot");
         });
 
-        // Continuar button (same style/size as 'Volver', placed bottom-right inside panel)
+        // Botón Continuar (mismo estilo/tamaño que 'Volver', ubicado abajo a la derecha en el panel)
         const contTxt = this.add
             .text(panelX + panelW - 24, panelY + panelH - 36, "Continuar", {
-                fontFamily: "Arial",
-                fontSize: 20,
-                color: "#222222",
-                backgroundColor: "#dddddd",
-                padding: { x: 14, y: 8 },
+                fontFamily: "Minecraftia, Arial Black, monospace",
+                fontSize: 18,
+                color: "#ffffff",
+                backgroundColor: "#00aa00",
+                padding: { x: 16, y: 10 },
+                stroke: "#000000",
+                strokeThickness: 3,
             })
             .setOrigin(1, 0.5)
             .setInteractive({ useHandCursor: true });
 
-        contTxt.on("pointerover", () => contTxt.setScale(1.02));
-        contTxt.on("pointerout", () => contTxt.setScale(1));
+        contTxt.on("pointerover", () => {
+            contTxt.setScale(1.08);
+            contTxt.setBackgroundColor("#00dd00");
+        });
+        contTxt.on("pointerout", () => {
+            contTxt.setScale(1);
+            contTxt.setBackgroundColor("#00aa00");
+        });
+        backTxt.on("pointerover", () => {
+            backTxt.setScale(1.08);
+            backTxt.setBackgroundColor("#dd0000");
+        });
+        backTxt.on("pointerout", () => {
+            backTxt.setScale(1);
+            backTxt.setBackgroundColor("#aa0000");
+        });
         contTxt.on("pointerdown", () => {
             try {
                 if (
@@ -116,7 +139,7 @@ Consejos:
             this.scene.start("CharacterSelect");
         });
 
-        // handle resize
+        // manejar el redimensionamiento
         this.scale.on("resize", (gameSize) => {
             const { width, height } = gameSize;
             bg.setDisplaySize(width, height);

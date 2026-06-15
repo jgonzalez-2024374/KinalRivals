@@ -9,19 +9,19 @@ export class Preloader extends Scene
 
     init ()
     {
-        //  We loaded this image in our Boot Scene, so we can display it here
+        //  Cargamos esta imagen en la escena Boot, así que la mostramos aquí
         this.add.image(512, 384, 'background');
 
-        //  A simple progress bar. This is the outline of the bar.
+        //  Barra de progreso sencilla. Este es el contorno de la barra.
         this.add.rectangle(512, 384, 468, 32).setStrokeStyle(1, 0xffffff);
 
-        //  This is the progress bar itself. It will increase in size from the left based on the % of progress.
+        //  Esta es la propia barra de progreso. Aumentará de ancho según el % de carga.
         const bar = this.add.rectangle(512-230, 384, 4, 28, 0xffffff);
 
-        //  Use the 'progress' event emitted by the LoaderPlugin to update the loading bar
+        //  Usar el evento 'progress' emitido por LoaderPlugin para actualizar la barra.
         this.load.on('progress', (progress) => {
 
-            //  Update the progress bar (our bar is 464px wide, so 100% = 464px)
+            //  Actualizar la barra de progreso (nuestra barra tiene 464px, así que 100% = 464px)
             bar.width = 4 + (460 * progress);
 
         });
@@ -29,23 +29,28 @@ export class Preloader extends Scene
 
     preload ()
     {
-        //  Load the assets for the game - Replace with your own assets
+        //  Cargar los recursos del juego - reemplaza por tus propios recursos
         this.load.setPath('assets');
 
         this.load.image('logo', 'logo.png');
         this.load.image('star', 'star.png');
-        // Stage images
-        this.load.image('stage_kinal', 'kinal_construccion.png');
+        // imágenes de escenarios
+        this.load.image('stage_kinal', 'Entrada_kinal.png');
         this.load.image('stage_tierra', 'Tierra.jpeg');
         this.load.image('stage_bg', 'bg.png');
+        this.load.image('charactersBg', 'Personajes.png');
+        this.load.image('card30', '30.png');
+        this.load.image('card31', '31.png');
+        this.load.image('card32', '32.png');
+        this.load.image('card33', '33.png');
     }
 
     create ()
     {
-        //  When all the assets have loaded, it's often worth creating global objects here that the rest of the game can use.
-        //  For example, you can define global animations here, so we can use them in other scenes.
+        //  Cuando todos los recursos estén cargados, suele ser útil crear objetos globales aquí para el resto del juego.
+        //  Por ejemplo, puedes definir animaciones globales aquí para usarlas en otras escenas.
 
-        //  Move to the MainMenu. You could also swap this for a Scene Transition, such as a camera fade.
+        //  Ir al MainMenu. También podrías cambiar esto por una transición de escena, como un fundido de cámara.
         this.scene.start('MainMenu');
     }
 }

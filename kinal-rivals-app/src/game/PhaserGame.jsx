@@ -6,7 +6,7 @@ export const PhaserGame = forwardRef(function PhaserGame ({ currentActiveScene }
 {
     const game = useRef();
 
-    // Create the game inside a useLayoutEffect hook to avoid the game being created outside the DOM
+    // Crear el juego dentro de useLayoutEffect para evitar crear Phaser fuera del DOM
     useLayoutEffect(() => {
         
         if (game.current === undefined)
