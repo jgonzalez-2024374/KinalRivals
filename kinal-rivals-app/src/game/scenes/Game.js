@@ -191,19 +191,23 @@ export class Game extends Scene {
 
     placeBlock(player, playerIndex) {
         if (!player || !player.body) return;
-        // tamaño del bloque: mitad del tamaño visible del jugador
-        const bw = Math.max(8, Math.round(player.displayWidth * 0.5));
-        const bh = Math.max(8, Math.round(player.displayHeight * 0.5));
+        // tamaño fijo del bloque: 100x100 píxeles
+        const bw = 100;
+        const bh = 100;
 
         // posición: al nivel vertical del jugador (centro), y un poco delante horizontalmente
         const offsetX = playerIndex === 1 ? Math.round(bw * 1.2) : -Math.round(bw * 1.2);
         const bx = player.x + offsetX;
         const by = player.y; // mismo nivel vertical que el jugador
 
-        // crear bloque estático con textura 'blockTex'
-        const b = this.blocks.create(bx, by, 'blockTex').setOrigin(0.5);
+        const b = this.physics.add.staticImage(bx, by, 'blockTex').setOrigin(0.5);
         b.setDisplaySize(bw, bh);
-        // refreshBody después de cambiar tamaño para que el body estático se actualice
-        if (b.body && b.body.refreshBody) b.body.refreshBody();
+        if (b.body) {
+            if (typeof b.body.setSize === 'function') b.body.setSize(bw, bh);
+            if (typeof b.body.refreshBody === 'function') b.body.refreshBody();
+        }
+        if (this.blocks && typeof this.blocks.add === 'function') this.blocks.add(b);
+        if (this.player1) this.physics.add.collider(this.player1, b);
+        if (this.player2) this.physics.add.collider(this.player2, b);
     }
 }
