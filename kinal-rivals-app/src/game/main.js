@@ -5,6 +5,7 @@ import { MainMenu } from "./scenes/MainMenu";
 import { Preloader } from "./scenes/Preloader";
 import { Rules } from "./scenes/Rules";
 import { CharacterSelect } from "./scenes/CharacterSelect";
+import StageSelect from "./scenes/StageSelect";
 import * as Phaser from "phaser";
 
 const config = {
@@ -24,7 +25,7 @@ const config = {
             debug: false,
         },
     },
-    scene: [Boot, Preloader, MainMenu, Rules, CharacterSelect, Game, GameOver],
+    scene: [Boot, Preloader, MainMenu, Rules, CharacterSelect, StageSelect, Game, GameOver],
 };
 
 export default function StartGame(parent) {
