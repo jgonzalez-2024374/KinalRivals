@@ -9,19 +9,14 @@ export class Preloader extends Scene
 
     init ()
     {
-        //  Cargamos esta imagen en la escena Boot, así que la mostramos aquí
         this.add.image(512, 384, 'background');
 
-        //  Barra de progreso sencilla. Este es el contorno de la barra.
         this.add.rectangle(512, 384, 468, 32).setStrokeStyle(1, 0xffffff);
 
-        //  Esta es la propia barra de progreso. Aumentará de ancho según el % de carga.
         const bar = this.add.rectangle(512-230, 384, 4, 28, 0xffffff);
 
-        //  Usar el evento 'progress' emitido por LoaderPlugin para actualizar la barra.
         this.load.on('progress', (progress) => {
 
-            //  Actualizar la barra de progreso (nuestra barra tiene 464px, así que 100% = 464px)
             bar.width = 4 + (460 * progress);
 
         });
@@ -29,7 +24,6 @@ export class Preloader extends Scene
 
     preload ()
     {
-        //  Cargar los recursos del juego - reemplaza por tus propios recursos
         this.load.setPath('assets');
 
         this.load.image('logo', 'logo.png');
@@ -43,14 +37,29 @@ export class Preloader extends Scene
         this.load.image('card31', '31.png');
         this.load.image('card32', '32.png');
         this.load.image('card33', '33.png');
+
+        const characterCodes = ['30', '31', '32', '33'];
+        const armSides = ['derecho', 'izquierdo'];
+        const armOrientations = ['derecha', 'frontal', 'izquierda'];
+
+        characterCodes.forEach((code) => {
+            this.load.image(code, `${code}.png`);
+        });
+
+        const fallbackArmCode = '30';
+        armSides.forEach((side) => {
+            armOrientations.forEach((orientation) => {
+                this.load.image(`${fallbackArmCode}_brazo_${side}_${orientation}`, `${fallbackArmCode}_brazo_${side}_${orientation}.png`);
+            });
+        });
+
+        this.load.image('Cabeza_frontal', 'Cabeza_frontal.png');
+        this.load.image('Cabeza_izquierda', 'Cabeza_izquierda.png');
+        this.load.image('Cabeza_derecha', 'Cabeza_derecha.png');
     }
 
     create ()
     {
-        //  Cuando todos los recursos estén cargados, suele ser útil crear objetos globales aquí para el resto del juego.
-        //  Por ejemplo, puedes definir animaciones globales aquí para usarlas en otras escenas.
-
-        //  Ir al MainMenu. También podrías cambiar esto por una transición de escena, como un fundido de cámara.
         this.scene.start('MainMenu');
     }
 }

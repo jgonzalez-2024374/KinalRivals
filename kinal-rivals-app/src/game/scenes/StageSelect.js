@@ -7,7 +7,6 @@ export class StageSelect extends Scene {
     }
 
     init(data) {
-        // recibir personajes seleccionados desde CharacterSelect
         this.initialCharacters =
             data && data.characters ? data.characters.slice() : [];
     }
@@ -45,10 +44,8 @@ export class StageSelect extends Scene {
             )
             .setOrigin(0.5);
 
-        // No mostramos tarjetas de personajes en StageSelect; solo selección de escenario.
         const padding = 32;
         const startY = 120;
-        // si vienen personajes seleccionados desde CharacterSelect, los guardamos
         this.selectedCharacters = this.initialCharacters
             ? this.initialCharacters.slice()
             : [];
@@ -80,7 +77,6 @@ export class StageSelect extends Scene {
             }
         };
 
-        // inicialmente deshabilitado hasta seleccionar un escenario
         setStartBtnEnabled(false);
 
         startBtn.on("pointerdown", () => {
@@ -104,7 +100,6 @@ export class StageSelect extends Scene {
             }
         });
 
-        // --- panel de selección de escenario (miniaturas ampliadas) ---
         const stages = [
             { key: "stage_kinal", name: "Entrada kinal" },
             { key: "stage_construccion", name: "Construcción" },
@@ -145,7 +140,6 @@ export class StageSelect extends Scene {
             const x = startX + i * (thumbW + gap) + thumbW / 2;
             const y = ty + thumbH / 2;
 
-            // cuadro relleno + borde para la miniatura
             const g = this.add.graphics();
             g.fillStyle(0x222222, 0.6);
             g.fillRoundedRect(
@@ -189,12 +183,10 @@ export class StageSelect extends Scene {
                 updateStageBorders();
                 this.selectedStage = s.key;
                 EventBus.emit("stage-selected", s.key);
-                // habilitar el botón iniciar solo si ya hay 2 personajes seleccionados
                 setStartBtnEnabled(true);
             });
         });
 
-        // mostrar bordes de escenarios
         updateStageBorders();
     }
 }

@@ -7,7 +7,6 @@ export class CharacterSelect extends Scene {
     }
 
     preload() {
-        // Cargar los recursos de selección de personajes
         this.load.setPath('assets');
         this.load.image('charactersBg', 'Personajes.png');
         this.load.image('card30', '30.png');
@@ -17,7 +16,6 @@ export class CharacterSelect extends Scene {
     }
 
     create() {
-        // imagen de fondo a pantalla completa fija
         if (this.textures.exists('charactersBg')) {
             this.background = this.add.image(0, 0, 'charactersBg').setOrigin(0).setDisplaySize(this.scale.width, this.scale.height);
             this.background.setScrollFactor(0);
@@ -28,7 +26,6 @@ export class CharacterSelect extends Scene {
 
         this.add.text(this.scale.width / 2, 64, 'Seleccionar Personaje', { fontFamily: 'Arial Black', fontSize: 32, color: '#ffffff' }).setOrigin(0.5);
 
-        // tarjetas de personajes
         const cols = 4;
         const padding = 24;
         const cardW = Math.min(240, Math.floor((this.scale.width - padding * (cols + 1)) / cols));
@@ -91,7 +88,6 @@ export class CharacterSelect extends Scene {
             zone.on('pointerdown', () => toggleSelection(cardInfo));
         });
 
-        // botón Siguiente
         const startBtn = this.add.text(this.scale.width / 2, this.scale.height - 64, 'Siguiente', { fontFamily: 'Arial', fontSize: 22, color: '#222222', backgroundColor: '#dddddd', padding: { x: 12, y: 8 } }).setOrigin(0.5);
 
         const setStartBtnEnabled = (enabled) => {
@@ -105,7 +101,6 @@ export class CharacterSelect extends Scene {
             }
         };
 
-        // inicialmente deshabilitado
         setStartBtnEnabled(false);
 
         startBtn.on('pointerdown', () => {
@@ -113,7 +108,6 @@ export class CharacterSelect extends Scene {
             this.scene.start('StageSelect', { characters: this.selectedCharacters });
         });
 
-        // manejador de redimensionamiento
         this.scale.on('resize', (gameSize) => {
             const { width, height } = gameSize;
             startBtn.setPosition(width / 2, height - 64);

@@ -108,7 +108,6 @@ export class Boot extends Scene
                     document.body.style.overflow = '';
                 }
             } catch (e) {}
-                // Abrir primero la escena Rules, luego el jugador continuará a selección de personaje
                 this.scene.start('Rules');
         });
 
