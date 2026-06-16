@@ -17,7 +17,8 @@ export class StageSelect extends Scene {
 
         this.load.image("charactersBg", "Personajes.png");
         this.load.image("stage_kinal", "Entrada_kinal.png");
-        this.load.image("stage_tierra", "Tierra.jpeg");
+        this.load.image("stage_construccion", "Construccion_kinal.png");
+        this.load.image("stage_canchas", "Canchas_kinal.png");
         this.load.image("stage_bg", "bg.png");
     }
 
@@ -63,7 +64,8 @@ export class StageSelect extends Scene {
         this.selectedStage = null;
 
         const setStartBtnEnabled = (enabled) => {
-            if (enabled) {
+            const canStart = enabled && this.selectedCharacters && this.selectedCharacters.length === 2;
+            if (canStart) {
                 startBtn.setInteractive({ useHandCursor: true });
                 startBtn.setStyle({
                     backgroundColor: "#88cc88",
@@ -83,6 +85,7 @@ export class StageSelect extends Scene {
 
         startBtn.on("pointerdown", () => {
             if (!this.selectedStage) return;
+            if (!this.selectedCharacters || this.selectedCharacters.length !== 2) return;
             EventBus.emit("selection-made", {
                 characters: this.selectedCharacters,
                 stage: this.selectedStage,
@@ -104,8 +107,8 @@ export class StageSelect extends Scene {
         // --- panel de selección de escenario (miniaturas ampliadas) ---
         const stages = [
             { key: "stage_kinal", name: "Entrada kinal" },
-            { key: "stage_tierra", name: "Tierra" },
-            { key: "stage_bg", name: "Plaza" },
+            { key: "stage_construccion", name: "Construcción" },
+            { key: "stage_canchas", name: "Canchas" },
         ];
 
         const thumbW = Math.min(320, Math.floor(this.scale.width * 0.28));
@@ -186,7 +189,7 @@ export class StageSelect extends Scene {
                 updateStageBorders();
                 this.selectedStage = s.key;
                 EventBus.emit("stage-selected", s.key);
-                // habilitar el botón iniciar cuando se seleccione un escenario
+                // habilitar el botón iniciar solo si ya hay 2 personajes seleccionados
                 setStartBtnEnabled(true);
             });
         });
