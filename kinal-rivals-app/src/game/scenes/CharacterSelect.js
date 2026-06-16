@@ -63,6 +63,7 @@ export class CharacterSelect extends Scene {
                 card.selected = true;
             }
             updateCardBorders();
+            setStartBtnEnabled(true);
         };
 
         names.forEach((name, i) => {
@@ -91,10 +92,24 @@ export class CharacterSelect extends Scene {
         });
 
         // botón Siguiente
-        const startBtn = this.add.text(this.scale.width / 2, this.scale.height - 64, 'Siguiente', { fontFamily: 'Arial', fontSize: 22, color: '#222222', backgroundColor: '#dddddd', padding: { x: 12, y: 8 } }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+        const startBtn = this.add.text(this.scale.width / 2, this.scale.height - 64, 'Siguiente', { fontFamily: 'Arial', fontSize: 22, color: '#222222', backgroundColor: '#dddddd', padding: { x: 12, y: 8 } }).setOrigin(0.5);
+
+        const setStartBtnEnabled = (enabled) => {
+            const canStart = enabled && this.selectedCharacters && this.selectedCharacters.length === 2;
+            if (canStart) {
+                startBtn.setInteractive({ useHandCursor: true });
+                startBtn.setStyle({ backgroundColor: '#88cc88', color: '#061a06' });
+            } else {
+                startBtn.disableInteractive();
+                startBtn.setStyle({ backgroundColor: '#dddddd', color: '#222222' });
+            }
+        };
+
+        // inicialmente deshabilitado
+        setStartBtnEnabled(false);
 
         startBtn.on('pointerdown', () => {
-            // pasar selecciones al StageSelect
+            if (!this.selectedCharacters || this.selectedCharacters.length !== 2) return;
             this.scene.start('StageSelect', { characters: this.selectedCharacters });
         });
 

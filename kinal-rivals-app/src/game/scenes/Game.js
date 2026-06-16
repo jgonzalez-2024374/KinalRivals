@@ -10,10 +10,23 @@ export class Game extends Scene {
         this.selectedStage = data.stage || 'stage_kinal';
     }
 
+    getStageBackgroundImage(stage) {
+        switch (stage) {
+            case 'stage_kinal':
+                return 'Entrada_kinal.png';
+            case 'stage_construccion':
+                return 'Construccion_kinal.png';
+            case 'stage_canchas':
+                return 'Canchas_kinal.png';
+            case 'stage_bg':
+                return 'bg.png';
+            default:
+                return 'bg.png';
+        }
+    }
+
     preload () {
-        const stageImage = this.selectedStage === 'stage_kinal' ? 'Entrada_kinal.png' :
-            this.selectedStage === 'stage_tierra' ? 'Tierra.jpeg' :
-            'bg.png';
+        const stageImage = this.getStageBackgroundImage(this.selectedStage);
         this.load.image('bg', `assets/${stageImage}`);
         // textura para bloques (usar Tierra.jpeg)
         this.load.image('blockTex', 'assets/Tierra.jpeg');
@@ -110,11 +123,9 @@ export class Game extends Scene {
         const extraRaiseCm = 3; // subir un poco más (cm)
         const extraRaisePx = cmToPx(extraRaiseCm);
         const p1TargetY = groundTop - (this.player1.displayHeight / 2) - playerMargin - extraLift - extraPxRed - extraRaisePx;
-        // poner al jugador verde a la misma altura que el rojo
         const p2TargetY = p1TargetY;
         this.player1.setPosition(this.player1.x, p1TargetY);
-        // colocar el jugador verde exactamente en la misma X/Y que el rojo
-        this.player2.setPosition(this.player1.x, p2TargetY);
+        this.player2.setPosition(anchoCanvas * 0.75, p2TargetY);
         // asegurar que los cuerpos físicos se sincronicen con la nueva posición del GameObject
         if (this.player1.body && this.player1.body.updateFromGameObject) this.player1.body.updateFromGameObject();
         if (this.player2.body && this.player2.body.updateFromGameObject) this.player2.body.updateFromGameObject();
@@ -125,11 +136,9 @@ export class Game extends Scene {
         this.physics.add.collider(this.player1, this.ground);
         this.physics.add.collider(this.player2, this.ground);
 
-        // Reforzar la igualación de altura tras el primer paso de física y reactivar gravedad
         this.time.delayedCall(50, () => {
-            // forzar que player2 esté exactamente donde player1 (misma X/Y)
-            this.player2.setPosition(this.player1.x, this.player1.y);
-            if (this.player2.body && this.player2.body.reset) this.player2.body.reset(this.player1.x, this.player1.y);
+            this.player2.setPosition(anchoCanvas * 0.75, this.player1.y);
+            if (this.player2.body && this.player2.body.reset) this.player2.body.reset(this.player2.x, this.player2.y);
             if (this.player1.body && this.player1.body.reset) this.player1.body.reset(this.player1.x, this.player1.y);
             // asegurar velocidad cero y reactivar gravedad
             if (this.player1.body) {
@@ -162,7 +171,7 @@ export class Game extends Scene {
 
     update () {
         const speed = 350;
-        const jumpForce = -650; 
+        const jumpForce = -650;
 
         if (this.keysWASD.left.isDown) this.player1.setVelocityX(-speed);
         else if (this.keysWASD.right.isDown) this.player1.setVelocityX(speed);
