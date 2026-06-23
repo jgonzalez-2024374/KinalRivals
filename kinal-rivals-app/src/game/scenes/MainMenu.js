@@ -22,7 +22,34 @@ export class MainMenu extends Scene
             align: 'center'
         }).setDepth(100).setOrigin(0.5);
 
-        const rulesBtn = this.add.text(512, 520, 'Reglas', { fontFamily: 'Arial', fontSize: 22, color: '#222222', backgroundColor: '#dddddd', padding: { x: 12, y: 8 } }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+        const rulesBtnBg = this.add.graphics();
+        const drawRulesButton = () => {
+            rulesBtnBg.clear();
+            rulesBtnBg.fillStyle(0x021022);
+            rulesBtnBg.fillRoundedRect(437, 495, 150, 50, 8);
+            rulesBtnBg.lineStyle(4, 0xff6a00);
+            rulesBtnBg.strokeRoundedRect(437, 495, 150, 50, 8);
+        };
+        drawRulesButton();
+
+        const rulesBtn = this.add.text(512, 520, 'REGLAS', {
+            fontFamily: 'Minecraftia',
+            fontSize: 20,
+            color: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 3
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+
+        rulesBtn.on('pointerover', () => {
+            rulesBtnBg.setFillStyle(0x041428);
+            rulesBtn.setScale(1.05);
+        });
+
+        rulesBtn.on('pointerout', () => {
+            rulesBtnBg.setFillStyle(0x021022);
+            rulesBtn.setScale(1);
+        });
+
         rulesBtn.on('pointerdown', () => {
             this.scene.start('Rules');
         });
