@@ -9,6 +9,7 @@ export class StageSelect extends Scene {
     init(data) {
         this.initialCharacters =
             data && data.characters ? data.characters.slice() : [];
+        this.selectedCharacters = this.initialCharacters;
     }
 
     preload() {
@@ -46,40 +47,67 @@ export class StageSelect extends Scene {
 
         const padding = 32;
         const startY = 120;
-        this.selectedCharacters = this.initialCharacters
-            ? this.initialCharacters.slice()
-            : [];
-        const startBtn = this.add
-            .text(this.scale.width / 2, this.scale.height - 64, "Iniciar", {
-                fontFamily: "Arial",
+
+        const createStyledButton = (x, y, text) => {
+            const btnWidth = 180;
+            const btnHeight = 50;
+            const radius = 8;
+
+            const bg = this.add.graphics();
+            
+            const redrawButton = (fillColor) => {
+                bg.clear();
+                bg.fillStyle(fillColor, 1);
+                bg.fillRoundedRect(x - btnWidth / 2, y - btnHeight / 2, btnWidth, btnHeight, radius);
+                bg.lineStyle(5, 0xff6a00, 1);
+                bg.strokeRoundedRect(x - btnWidth / 2, y - btnHeight / 2, btnWidth, btnHeight, radius);
+            };
+
+            redrawButton(0x021022);
+            bg.setDepth(1);
+
+            const txt = this.add.text(x, y, text, {
+                fontFamily: "Minecraftia",
                 fontSize: 24,
-                color: "#222222",
-                backgroundColor: "#dddddd",
-                padding: { x: 14, y: 10 },
-            })
-            .setOrigin(0.5);
+                color: "#ffffff",
+                stroke: "#000000",
+                strokeThickness: 4
+            }).setOrigin(0.5).setInteractive({ useHandCursor: true }).setDepth(2);
+
+            return { bg, txt, x, y, btnWidth, btnHeight, redrawButton };
+        };
+
+        const startBtn = createStyledButton(this.scale.width - 130, this.scale.height - 70, "Iniciar");
+        const backBtn = createStyledButton(this.scale.width - 360, this.scale.height - 70, "Volver");
+
         this.selectedStage = null;
 
         const setStartBtnEnabled = (enabled) => {
-            const canStart = enabled && this.selectedCharacters && this.selectedCharacters.length === 2;
+            const canStart = enabled && this.selectedCharacters && this.selectedCharacters.length === 2 && this.selectedStage;
             if (canStart) {
-                startBtn.setInteractive({ useHandCursor: true });
-                startBtn.setStyle({
-                    backgroundColor: "#88cc88",
-                    color: "#061a06",
-                });
+                startBtn.redrawButton(0x041428);
             } else {
-                startBtn.disableInteractive();
-                startBtn.setStyle({
-                    backgroundColor: "#dddddd",
-                    color: "#222222",
-                });
+                startBtn.redrawButton(0x021022);
             }
         };
 
         setStartBtnEnabled(false);
 
-        startBtn.on("pointerdown", () => {
+        startBtn.txt.on("pointerover", () => {
+            startBtn.redrawButton(0x041428);
+            startBtn.txt.setScale(1.05);
+        });
+
+        startBtn.txt.on("pointerout", () => {
+            if (this.selectedCharacters.length === 2 && this.selectedStage) {
+                startBtn.redrawButton(0x041428);
+            } else {
+                startBtn.redrawButton(0x021022);
+            }
+            startBtn.txt.setScale(1);
+        });
+
+        startBtn.txt.on("pointerdown", () => {
             if (!this.selectedStage) return;
             if (!this.selectedCharacters || this.selectedCharacters.length !== 2) return;
             EventBus.emit("selection-made", {
@@ -92,9 +120,32 @@ export class StageSelect extends Scene {
             });
         });
 
+        backBtn.txt.on("pointerdown", () => {
+            this.scene.start("CharacterSelect");
+        });
+
+        backBtn.txt.on("pointerover", () => {
+            backBtn.redrawButton(0x041428);
+            backBtn.txt.setScale(1.05);
+        });
+
+        backBtn.txt.on("pointerout", () => {
+            backBtn.redrawButton(0x021022);
+            backBtn.txt.setScale(1);
+        });
+
         this.scale.on("resize", (gameSize) => {
             const { width, height } = gameSize;
-            startBtn.setPosition(width / 2, height - 64);
+            startBtn.bg.setPosition(width - 130, height - 70);
+            startBtn.txt.setPosition(width - 130, height - 70);
+            backBtn.bg.setPosition(width - 360, height - 70);
+            backBtn.txt.setPosition(width - 360, height - 70);
+            startBtn.x = width - 130;
+            startBtn.y = height - 70;
+            backBtn.x = width - 360;
+            backBtn.y = height - 70;
+            startBtn.redrawButton(this.selectedCharacters.length === 2 && this.selectedStage ? 0x041428 : 0x021022);
+            backBtn.redrawButton(0x021022);
             if (this.background) {
                 this.background.setDisplaySize(width, height);
             }

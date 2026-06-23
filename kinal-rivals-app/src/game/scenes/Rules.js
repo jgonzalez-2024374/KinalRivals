@@ -90,18 +90,7 @@ export class Rules extends Scene {
             })
             .setOrigin(0.5, 0);
 
-        const backTxt = this.add
-            .text(panelX + 24, panelY + panelH - 36, "Volver", {
-                fontFamily: "Minecraftia, Arial Black, monospace",
-                fontSize: 18,
-                color: "#FFFFFF",
-                backgroundColor: "#4C4C4C",
-                padding: { x: 24, y: 12 },
-                stroke: "#000000",
-                strokeThickness: 4,
-            })
-            .setOrigin(0, 0.5)
-            .setInteractive({ useHandCursor: true });
+        const backBg = this.add.graphics();backBg.fillStyle(0x021022, 1);backBg.lineStyle(3, 0xff6a00, 1);backBg.fillRoundedRect(panelX + 10, panelY + panelH - 58, 140, 44, 6);backBg.strokeRoundedRect(panelX + 10, panelY + panelH - 58, 140, 44, 6);const backTxt = this.add    .text(panelX + 80, panelY + panelH - 36, "Volver", {        fontFamily: "Minecraftia",        fontSize: 18,        color: "#FFFFFF",        stroke: "#000000",        strokeThickness: 4,    })    .setOrigin(0.5)    .setInteractive({ useHandCursor: true });
 
         backTxt.on("pointerdown", () => {
             try {
@@ -116,35 +105,10 @@ export class Rules extends Scene {
             this.scene.start("Boot");
         });
 
-        const contTxt = this.add
-            .text(panelX + panelW - 24, panelY + panelH - 36, "Continuar", {
-                fontFamily: "Minecraftia, Arial Black, monospace",
-                fontSize: 18,
-                color: "#FFFFFF",
-                backgroundColor: "#4C4C4C",
-                padding: { x: 24, y: 12 },
-                stroke: "#000000",
-                strokeThickness: 4,
-            })
-            .setOrigin(1, 0.5)
-            .setInteractive({ useHandCursor: true });
+        const contBg = this.add.graphics();contBg.fillStyle(0x021022, 1);contBg.lineStyle(3, 0xff6a00, 1);contBg.fillRoundedRect(    panelX + panelW - 150,    panelY + panelH - 58,    140,    44,    6);contBg.strokeRoundedRect(    panelX + panelW - 150,    panelY + panelH - 58,    140,    44,    6);const contTxt = this.add    .text(panelX + panelW - 80, panelY + panelH - 36, "Continuar", {        fontFamily: "Minecraftia",        fontSize: 18,        color: "#FFFFFF",        stroke: "#000000",        strokeThickness: 4,    })    .setOrigin(0.5)    .setInteractive({ useHandCursor: true });
 
-        contTxt.on("pointerover", () => {
-            contTxt.setScale(1.08);
-            contTxt.setBackgroundColor("#07305a");
-        });
-        contTxt.on("pointerout", () => {
-            contTxt.setScale(1);
-            contTxt.setBackgroundColor("#021022");
-        });
-        backTxt.on("pointerover", () => {
-            backTxt.setScale(1.08);
-            backTxt.setBackgroundColor("#07305a");
-        });
-        backTxt.on("pointerout", () => {
-            backTxt.setScale(1);
-            backTxt.setBackgroundColor("#021022");
-        });
+        contTxt.on("pointerover", () => {    contTxt.setScale(1.08);    contBg.clear();    contBg.fillStyle(0x072040, 1);    contBg.lineStyle(3, 0xff6a00, 1);    contBg.fillRoundedRect(    panelX + panelW - 150,    panelY + panelH - 58,    140,    44,    6);    contBg.strokeRoundedRect(    panelX + panelW - 150,    panelY + panelH - 58,    140,    44,    6);});contTxt.on("pointerout", () => {    contTxt.setScale(1);    contBg.clear();    contBg.fillStyle(0x021022, 1);    contBg.lineStyle(3, 0xff6a00, 1);    contBg.fillRoundedRect(    panelX + panelW - 150,    panelY + panelH - 58,    140,    44,    6);    contBg.strokeRoundedRect(    panelX + panelW - 150,    panelY + panelH - 58,    140,    44,    6);});
+        backTxt.on("pointerover", () => {    backTxt.setScale(1.08);    backBg.clear();    backBg.fillStyle(0x072040, 1);    backBg.lineStyle(3, 0xff6a00, 1);    backBg.fillRoundedRect(panelX + 10, panelY + panelH - 58, 140, 44, 6);    backBg.strokeRoundedRect(panelX + 10, panelY + panelH - 58, 140, 44, 6);});backTxt.on("pointerout", () => {    backTxt.setScale(1);    backBg.clear();    backBg.fillStyle(0x021022, 1);    backBg.lineStyle(3, 0xff6a00, 1);    backBg.fillRoundedRect(panelX + 10, panelY + panelH - 58, 140, 44, 6);    backBg.strokeRoundedRect(panelX + 10, panelY + panelH - 58, 140, 44, 6);});
 
         this.tweens.add({
             targets: [backTxt, contTxt],
