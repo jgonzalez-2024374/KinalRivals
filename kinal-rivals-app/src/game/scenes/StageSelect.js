@@ -15,7 +15,7 @@ export class StageSelect extends Scene {
     preload() {
         this.load.setPath("assets");
 
-        this.load.image("charactersBg", "Personajes.png");
+        this.load.image("charactersBg", "Pasillo.png");
         this.load.image("stage_kinal", "Entrada_kinal.png");
         this.load.image("stage_construccion", "Construccion_kinal.png");
         this.load.image("stage_canchas", "Canchas_kinal.png");
@@ -36,15 +36,26 @@ export class StageSelect extends Scene {
                 .setOrigin(0);
         }
 
-        this.add
-            .text(
-                this.scale.width / 2,
-                64,
-                "Seleccionar Personaje y Escenario",
-                { fontFamily: "Arial Black", fontSize: 36, color: "#ffffff" },
-            )
-            .setOrigin(0.5);
+        const title = this.add.text(
+            this.scale.width / 2,
+            70,
+            '⚔ SELECCIONA UN ESCENARIO ⚔',
+            {
+                fontFamily: 'Minecraftia',
+                fontSize: 42,
+                color: '#ffffff',
+                stroke: '#000000',
+                strokeThickness: 6
+            }
+        ).setOrigin(0.5);
 
+        this.tweens.add({
+            targets: title,
+            scale: 1.04,
+            duration: 1200,
+            yoyo: true,
+            repeat: -1
+        });
         const padding = 32;
         const startY = 120;
 

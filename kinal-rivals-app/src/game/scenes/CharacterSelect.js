@@ -8,7 +8,10 @@ export class CharacterSelect extends Scene {
 
     preload() {
         this.load.setPath('assets');
-        this.load.image('charactersBg', 'Personajes.png');
+        this.load.image('charactersBg', 'Pasillo.png');
+        this.load.image('card26', '26.png');
+        this.load.image('card28', '28.png');
+        this.load.image('card29', '29.png');
         this.load.image('card30', '30.png');
         this.load.image('card31', '31.png');
         this.load.image('card32', '32.png');
@@ -47,15 +50,31 @@ export class CharacterSelect extends Scene {
             repeat: -1
         });
 
-        const cols = 4;
+        const cols = 5;
         const padding = 24;
         const cardW = Math.min(240, Math.floor((this.scale.width - padding * (cols + 1)) / cols));
         const cardH = 320;
-        const startY = 140;
+        const startY = 70;
+        const footerHeight = 100;
+        
+        const visibleRows = 2;
+        const visibleHeight = visibleRows * (cardH + padding) + padding;
+        const totalHeight = this.scale.height - startY - footerHeight;
+        const containerHeight = Math.min(visibleHeight, totalHeight);
 
-        const names = ['30', '31', '32', '33', 'Azul', 'Corinto'];
+        const names = ['26', '28', '29', '30', '31', '32', '33', 'Azul', 'Corinto'];
         this.selectedCharacters = [];
         this.cardSelections = [];
+
+        const cardsContainer = this.add.container(0, 0);
+        
+        const maskGraphics = this.make.graphics({ x: 0, y: 0, add: false });
+        maskGraphics.fillStyle(0xffffff);
+        maskGraphics.fillRect(0, startY, this.scale.width, containerHeight);
+        const mask = maskGraphics.createGeometryMask();
+        cardsContainer.setMask(mask);
+
+        let scrollOffset = 0;
 
         const updateCardBorders = () => {
             this.cardSelections.forEach((card) => {
@@ -67,7 +86,7 @@ export class CharacterSelect extends Scene {
                 } else {
                     card.g.lineStyle(2, 0x444444, 1);
                 }
-                card.g.strokeRoundedRect(card.x - cardW / 2, card.y - cardH / 2, cardW, cardH, 8);
+                card.g.strokeRoundedRect(-cardW / 2, -cardH / 2, cardW, cardH, 8);
             });
         };
 
@@ -84,30 +103,59 @@ export class CharacterSelect extends Scene {
             setStartBtnEnabled(true);
         };
 
+        const contentHeight = Math.ceil(names.length / cols) * (cardH + padding) + padding;
+        const maxScroll = Math.max(0, contentHeight - containerHeight);
+
+        const cardObjects = [];
+
+        this.input.on('wheel', (pointer, gameObjects, deltaX, deltaY) => {
+            scrollOffset = Phaser.Math.Clamp(scrollOffset + deltaY * 0.5, 0, maxScroll);
+            cardObjects.forEach(obj => {
+                obj.y = obj.originalY - scrollOffset;
+            });
+        });
+
         names.forEach((name, i) => {
             const col = i % cols;
             const row = Math.floor(i / cols);
             const x = padding + col * (cardW + padding) + cardW / 2;
-            const y = startY + row * (cardH + padding) + cardH / 2;
+            const y = padding + row * (cardH + padding) + cardH / 2;
 
             const g = this.add.graphics();
             g.lineStyle(2, 0x444444, 1);
-            g.strokeRoundedRect(x - cardW / 2, y - cardH / 2, cardW, cardH, 8);
+            g.strokeRoundedRect(-cardW / 2, -cardH / 2, cardW, cardH, 8);
+            g.x = x;
+            g.y = startY + y;
+            g.originalY = g.y;
+            cardsContainer.add(g);
+            cardObjects.push(g);
 
             const cardTextureKey = `card${name}`;
             const textureKey = this.textures.exists(cardTextureKey) ? cardTextureKey : name;
             if (this.textures.exists(textureKey)) {
-                this.add.image(x, y, textureKey).setDisplaySize(cardW - 16, cardH - 16).setOrigin(0.5).setDepth(1);
+                const img = this.add.image(x, startY + y, textureKey).setDisplaySize(cardW - 16, cardH - 16).setOrigin(0.5).setDepth(1);
+                img.originalY = img.y;
+                cardsContainer.add(img);
+                cardObjects.push(img);
             } else {
-                this.add.rectangle(x, y, cardW - 16, cardH - 16, 0x2b2b2b, 1).setOrigin(0.5);
-                this.add.text(x, y + cardH / 2 - 22, name, { fontFamily: 'Arial', fontSize: 18, color: '#ffffff' }).setOrigin(0.5);
+                const rect = this.add.rectangle(x, startY + y, cardW - 16, cardH - 16, 0x2b2b2b, 1).setOrigin(0.5);
+                const txt = this.add.text(x, startY + y + cardH / 2 - 22, name, { fontFamily: 'Arial', fontSize: 18, color: '#ffffff' }).setOrigin(0.5);
+                rect.originalY = rect.y;
+                txt.originalY = txt.y;
+                cardsContainer.add(rect);
+                cardsContainer.add(txt);
+                cardObjects.push(rect);
+                cardObjects.push(txt);
             }
 
-            const cardInfo = { name, x, y, g, selected: false };
+            const cardInfo = { name, x, y: startY + y, g, selected: false };
             this.cardSelections.push(cardInfo);
 
-            const zone = this.add.zone(x, y, cardW, cardH).setOrigin(0.5).setInteractive();
+            const zone = this.add.zone(x, startY + y, cardW, cardH).setOrigin(0.5).setInteractive();
+            zone.originalY = zone.y;
             zone.on('pointerdown', () => toggleSelection(cardInfo));
+            cardsContainer.add(zone);
+            cardObjects.push(zone);
         });
 
         const createStyledButton = (x, y, text) => {
