@@ -6,6 +6,113 @@ export class Game extends Scene {
         super('Game');
     }
 
+    createHeartString(count) {
+        return '♥'.repeat(Math.max(0, count));
+    }
+
+    createHud(anchoCanvas, altoCanvas) {
+        const nameStyle = {
+            fontFamily: 'Minecraftia',
+            fontSize: 28,
+            color: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 4
+        };
+
+        const heartsStyle = {
+            fontFamily: 'Arial',
+            fontSize: 26,
+            color: '#ff4d4d',
+            stroke: '#000000',
+            strokeThickness: 3
+        };
+
+        this.player1NameText = this.add.text(24, 14, 'Jugador 1', nameStyle)
+            .setScrollFactor(0)
+            .setDepth(100);
+
+        this.player1HeartsText = this.add.text(24, 44, this.createHeartString(this.player1Health), heartsStyle)
+            .setScrollFactor(0)
+            .setDepth(100);
+
+        this.player2NameText = this.add.text(anchoCanvas - 24, 14, 'Jugador 2', nameStyle)
+            .setOrigin(1, 0)
+            .setScrollFactor(0)
+            .setDepth(100);
+
+        this.player2HeartsText = this.add.text(anchoCanvas - 24, 44, this.createHeartString(this.player2Health), heartsStyle)
+            .setOrigin(1, 0)
+            .setScrollFactor(0)
+            .setDepth(100);
+
+        this.createInventoryRow(24, altoCanvas - 34, 'left');
+        this.createInventoryRow(anchoCanvas - 24, altoCanvas - 34, 'right');
+    }
+
+    createInventoryRow(anchorX, anchorY, side) {
+        const slotSize = 42;
+        const gap = 6;
+        const slots = 5;
+        const totalWidth = (slotSize * slots) + (gap * (slots - 1));
+        const startX = side === 'left' ? anchorX : anchorX - totalWidth;
+
+        for (let index = 0; index < slots; index++) {
+            const x = startX + (index * (slotSize + gap)) + (slotSize / 2);
+            const slot = this.add.rectangle(x, anchorY, slotSize, slotSize, 0x8a8a8a, 1)
+                .setStrokeStyle(2, 0x2f2f2f, 1)
+                .setScrollFactor(0)
+                .setDepth(100);
+
+            slot.setAlpha(0.95);
+        }
+    }
+
+    refreshHealthHud() {
+        if (this.player1HeartsText) {
+            this.player1HeartsText.setText(this.createHeartString(this.player1Health));
+        }
+
+        if (this.player2HeartsText) {
+            this.player2HeartsText.setText(this.createHeartString(this.player2Health));
+        }
+    }
+
+    endMatch() {
+        if (this.matchEnded) return;
+
+        this.matchEnded = true;
+        this.gameStarted = false;
+
+        if (this.player1?.body) {
+            this.player1.body.setVelocity(0, 0);
+            this.player1.body.allowGravity = false;
+        }
+
+        if (this.player2?.body) {
+            this.player2.body.setVelocity(0, 0);
+            this.player2.body.allowGravity = false;
+        }
+
+        this.timeOverImage = this.add.image(this.scale.width / 2, this.scale.height / 2, 'tiempo')
+            .setOrigin(0.5)
+            .setDepth(200);
+
+        const maxWidth = this.scale.width * 0.7;
+        const targetScale = this.timeOverImage.width > maxWidth ? maxWidth / this.timeOverImage.width : 1;
+
+        this.timeOverImage.setAlpha(0);
+        this.timeOverImage.setScale(targetScale * 0.6);
+
+        this.tweens.add({
+            targets: this.timeOverImage,
+            alpha: 1,
+            scaleX: targetScale,
+            scaleY: targetScale,
+            duration: 450,
+            ease: 'Back.Out'
+        });
+    }
+
     init(data) {
         this.selectedStage = data.stage || 'stage_kinal';
         this.selectedCharacters = Array.isArray(data.characters) && data.characters.length >= 2
@@ -13,6 +120,8 @@ export class Game extends Scene {
             : ['30', '31'];
         this.redCharacter = this.selectedCharacters[0] || '30';
         this.greenCharacter = this.selectedCharacters[1] || '31';
+        this.player1Health = 8;
+        this.player2Health = 8;
     }
 
     getStageBackgroundImage(stage) {
@@ -35,6 +144,7 @@ export class Game extends Scene {
         const stageImage = this.getStageBackgroundImage(this.selectedStage);
         this.load.image('bg', stageImage);
         this.load.image('blockTex', 'Tierra.jpeg');
+        this.load.image('tiempo', 'Tiempo.png');
 
         this.load.image(this.redCharacter, `${this.redCharacter}.png`);
         this.load.image(this.greenCharacter, `${this.greenCharacter}.png`);
@@ -134,7 +244,9 @@ export class Game extends Scene {
 
         this.timeRemaining = 120;
         this.gameStarted = false;
+        this.matchEnded = false;
         this.countdownValue = 3;
+        this.createHud(anchoCanvas, altoCanvas);
         this.timerText = this.add.text(anchoCanvas / 2, 50, '3', {
             fontFamily: 'Minecraftia',
             fontSize: 64,
@@ -176,30 +288,39 @@ export class Game extends Scene {
             
             if (this.timeRemaining <= 0) {
                 this.timerText.setColor('#ff0000');
+                this.timerText.setText('00:00');
+                this.endMatch();
+                return;
             }
         }
 
-        if (this.keysWASD.left.isDown) this.player1.setVelocityX(-speed);
-        else if (this.keysWASD.right.isDown) this.player1.setVelocityX(speed);
-        else this.player1.setVelocityX(0);
-        if (this.keysWASD.up.isDown && this.player1.body.touching.down) this.player1.setVelocityY(jumpForce);
+        if (this.matchEnded) {
+            return;
+        }
 
-        if (this.cursors.left.isDown) this.player2.setVelocityX(-speed);
-        else if (this.cursors.right.isDown) this.player2.setVelocityX(speed);
-        else this.player2.setVelocityX(0);
-        if (this.cursors.up.isDown && this.player2.body.touching.down) this.player2.setVelocityY(jumpForce);
+        if (this.gameStarted) {
+            if (this.keysWASD.left.isDown) this.player1.setVelocityX(-speed);
+            else if (this.keysWASD.right.isDown) this.player1.setVelocityX(speed);
+            else this.player1.setVelocityX(0);
+            if (this.keysWASD.up.isDown && this.player1.body.touching.down) this.player1.setVelocityY(jumpForce);
 
-        let distY = Math.abs(this.player1.y - this.player2.y);
-        let distX = Math.abs(this.player1.x - this.player2.x);
+            if (this.cursors.left.isDown) this.player2.setVelocityX(-speed);
+            else if (this.cursors.right.isDown) this.player2.setVelocityX(speed);
+            else this.player2.setVelocityX(0);
+            if (this.cursors.up.isDown && this.player2.body.touching.down) this.player2.setVelocityY(jumpForce);
 
-        if (distX < 55 && distY < 80) {
-            let repulsion = 5;
-            if (this.player1.x < this.player2.x) {
-                this.player1.x -= repulsion;
-                this.player2.x += repulsion;
-            } else {
-                this.player1.x += repulsion;
-                this.player2.x -= repulsion;
+            let distY = Math.abs(this.player1.y - this.player2.y);
+            let distX = Math.abs(this.player1.x - this.player2.x);
+
+            if (distX < 55 && distY < 80) {
+                let repulsion = 5;
+                if (this.player1.x < this.player2.x) {
+                    this.player1.x -= repulsion;
+                    this.player2.x += repulsion;
+                } else {
+                    this.player1.x += repulsion;
+                    this.player2.x -= repulsion;
+                }
             }
         }
     }
