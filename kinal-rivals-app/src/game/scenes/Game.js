@@ -131,11 +131,53 @@ export class Game extends Scene {
             right: Phaser.Input.Keyboard.KeyCodes.D
         });
         this.cursors = this.input.keyboard.createCursorKeys();
+
+        this.timeRemaining = 120;
+        this.gameStarted = false;
+        this.countdownValue = 3;
+        this.timerText = this.add.text(anchoCanvas / 2, 50, '3', {
+            fontFamily: 'Minecraftia',
+            fontSize: 64,
+            color: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 4
+        }).setOrigin(0.5).setDepth(100);
+        this.lastTimeUpdate = 0;
+
+        this.time.delayedCall(1000, () => {
+            this.countdownValue = 2;
+            this.timerText.setText('2');
+        });
+
+        this.time.delayedCall(2000, () => {
+            this.countdownValue = 1;
+            this.timerText.setText('1');
+        });
+
+        this.time.delayedCall(3000, () => {
+            this.gameStarted = true;
+            this.countdownValue = 0;
+            this.timerText.setText('02:00');
+            this.timerText.setFontSize(48);
+            this.lastTimeUpdate = this.game.getTime();
+        });
     }
 
     update () {
         const speed = 350;
         const jumpForce = -650;
+
+        if (this.gameStarted && this.timeRemaining > 0 && this.game.getTime() - this.lastTimeUpdate >= 1000) {
+            this.timeRemaining--;
+            this.lastTimeUpdate = this.game.getTime();
+            const minutes = Math.floor(this.timeRemaining / 60);
+            const seconds = this.timeRemaining % 60;
+            this.timerText.setText(`${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`);
+            
+            if (this.timeRemaining <= 0) {
+                this.timerText.setColor('#ff0000');
+            }
+        }
 
         if (this.keysWASD.left.isDown) this.player1.setVelocityX(-speed);
         else if (this.keysWASD.right.isDown) this.player1.setVelocityX(speed);
