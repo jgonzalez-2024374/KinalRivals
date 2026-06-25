@@ -2,21 +2,21 @@ import { Scene } from 'phaser';
 import * as Phaser from 'phaser';
 
 export class Game extends Scene {
-    constructor () {
+    constructor() {
         super('Game');
     }
 
     getFacingFromVelocity(velocityX) {
-    if (velocityX < -10) {
-        return 'izquierda';
-    }
+        if (velocityX < -10) {
+            return 'izquierda';
+        }
 
-    if (velocityX > 10) {
-        return 'derecha';
-    }
+        if (velocityX > 10) {
+            return 'derecha';
+        }
 
-    return 'frontal'; 
-}
+        return 'frontal';
+    }
 
     getTextureKey(keys) {
         for (const key of keys) {
@@ -73,10 +73,10 @@ export class Game extends Scene {
 
     getCharacterPartTexture(characterCode, part, facing) {
         const direction = facing === 'izquierda'
-    ? 'CaraIzquierda'
-    : facing === 'derecha'
-        ? 'CaraDerecha'
-        : 'CaraFrontal';
+            ? 'CaraIzquierda'
+            : facing === 'derecha'
+                ? 'CaraDerecha'
+                : 'CaraFrontal';
 
         const textureMap = {
             torso: [
@@ -219,7 +219,7 @@ export class Game extends Scene {
         const legPhase = rig.walkPhase * 1.6;
         const leftStep = moving ? Math.sin(legPhase) : 0;
         const rightStep = moving ? Math.sin(legPhase + Math.PI) : 0;
-        const armSwing = moving ? Math.sin(legPhase) * 14 : 0;
+        const armSwing = moving ? Math.sin(legPhase) * 4 : 0;
 
         const torsoHeight = rig.torsoHeight;
         const torsoWidth = rig.torsoWidth;
@@ -303,7 +303,7 @@ export class Game extends Scene {
             rig.rightArm.setDepth(rightArmDepth);
         }
 
-            if (rig.leftLeg) {
+        if (rig.leftLeg) {
             const leftLegTexture = this.getTextureKey(leftLegFacing);
             if (leftLegTexture) {
                 rig.leftLeg.setTexture(leftLegTexture);
@@ -330,26 +330,27 @@ export class Game extends Scene {
 
             rig.rightLeg.setAngle(moving ? rightStep * 12 : 0);
         }
-        
+
         if (rig.handItem) {
             const selectedTexture = rig.handItemKey;
             const handItemShown = moving && selectedTexture && this.textures.exists(selectedTexture);
             if (handItemShown) {
                 const activeArm = facing === 'derecha' ? rig.rightArm : rig.leftArm;
                 const armAngleRad = Phaser.Math.DegToRad(activeArm.angle);
-                const armTipDistance = Math.max(0, rig.armHeight - 12);
-                const handXBase = activeArm.x + Math.sin(armAngleRad) * armTipDistance;
-                const handYBase = activeArm.y + Math.cos(armAngleRad) * armTipDistance - 20;
+                const armTipDistance = selectedTexture === 'espada' || selectedTexture === 'pico'
+                    ? rig.armHeight - 3
+                    : rig.armHeight;
+                const handXBase = activeArm.x - Math.sin(armAngleRad) * armTipDistance;
+                const handYBase = activeArm.y + Math.cos(armAngleRad) * armTipDistance;
                 const itemOffset = selectedTexture === 'espada' || selectedTexture === 'pico'
-                    ? { dx: 8, dy: -15 }
+                    ? { dx: facing === 'izquierda' ? -20 : 20, dy: -50 }
                     : selectedTexture === 'manzana' || selectedTexture === 'blockTex'
-                        ? { dx: 0, dy: 8 }
+                        ? { dx: 0, dy: -5 }
                         : { dx: 0, dy: 0 };
                 const handX = handXBase + itemOffset.dx;
                 const handY = handYBase + itemOffset.dy;
                 rig.handItem.setPosition(handX, handY);
-                const displayAngle = facing === 'izquierda' ? activeArm.angle - 20 : activeArm.angle;
-                rig.handItem.setAngle(displayAngle);
+                rig.handItem.setAngle(activeArm.angle);
                 if (rig.handItem.texture.key !== selectedTexture) {
                     rig.handItem.setTexture(selectedTexture);
                 }
@@ -492,6 +493,23 @@ export class Game extends Scene {
             duration: 450,
             ease: 'Back.Out'
         });
+
+        // Después de 3 segundos, desvanecerse y volver a CharacterSelect
+        this.time.delayedCall(3000, () => {
+            this.tweens.add({
+                targets: this.timeOverImage,
+                alpha: 0,
+                duration: 500,
+                ease: 'Power2.In',
+                onComplete: () => {
+                    if (this.timeOverImage) {
+                        this.timeOverImage.destroy();
+                    }
+                    // Volver a la escena de selección de personajes
+                    this.scene.start('CharacterSelect');
+                }
+            });
+        });
     }
 
     init(data) {
@@ -520,54 +538,54 @@ export class Game extends Scene {
         }
     }
 
-   preload () {
-    this.load.setPath('assets');
+    preload() {
+        this.load.setPath('assets');
 
-    const stageImage = this.getStageBackgroundImage(this.selectedStage);
-    this.load.image('bg', stageImage);
-    this.load.image('blockTex', 'Tierra.jpeg');
-    this.load.image('espada', 'Espada.png');
-    this.load.image('pico', 'Pico.png');
-    this.load.image('manzana', 'Manzana.png');
-    this.load.image('tiempo', 'Tiempo.png');
+        const stageImage = this.getStageBackgroundImage(this.selectedStage);
+        this.load.image('bg', stageImage);
+        this.load.image('blockTex', 'Tierra.jpeg');
+        this.load.image('espada', 'Espada.png');
+        this.load.image('pico', 'Pico.png');
+        this.load.image('manzana', 'Manzana.png');
+        this.load.image('tiempo', 'Tiempo.png');
 
-    const characters = [this.redCharacter, this.greenCharacter];
+        const characters = [this.redCharacter, this.greenCharacter];
 
-    const directions = ['CaraFrontal', 'CaraIzquierda', 'CaraDerecha'];
+        const directions = ['CaraFrontal', 'CaraIzquierda', 'CaraDerecha'];
 
-    // =========================
-    // 🧠 CABEZA (global)
-    // =========================
-    directions.forEach(dir => {
-        this.load.image(`Cabeza_${dir}`, `Cabeza_${dir}.png`);
-    });
-
-    // =========================
-    // 🔥 PARTES POR PERSONAJE
-    // =========================
-    characters.forEach(char => {
-
-        // TORSO
+        // =========================
+        // 🧠 CABEZA (global)
+        // =========================
         directions.forEach(dir => {
-            this.load.image(`${char}_Torso_${dir}`, `${char}_Torso_${dir}.png`);
+            this.load.image(`Cabeza_${dir}`, `Cabeza_${dir}.png`);
         });
 
-        // BRAZOS
-        directions.forEach(dir => {
-            this.load.image(`${char}_BrazoDerecho_${dir}`, `${char}_BrazoDerecho_${dir}.png`);
-            this.load.image(`${char}_BrazoIzquierdo_${dir}`, `${char}_BrazoIzquierdo_${dir}.png`);
+        // =========================
+        // 🔥 PARTES POR PERSONAJE
+        // =========================
+        characters.forEach(char => {
+
+            // TORSO
+            directions.forEach(dir => {
+                this.load.image(`${char}_Torso_${dir}`, `${char}_Torso_${dir}.png`);
+            });
+
+            // BRAZOS
+            directions.forEach(dir => {
+                this.load.image(`${char}_BrazoDerecho_${dir}`, `${char}_BrazoDerecho_${dir}.png`);
+                this.load.image(`${char}_BrazoIzquierdo_${dir}`, `${char}_BrazoIzquierdo_${dir}.png`);
+            });
+
+            // PIERNAS (si son compartidas no necesitas char)
+            directions.forEach(dir => {
+                this.load.image(`PiernaDerecha_${dir}`, `PiernaDerecha_${dir}.png`);
+                this.load.image(`PiernaIzquierda_${dir}`, `PiernaIzquierda_${dir}.png`);
+            });
+
         });
+    }
 
-        // PIERNAS (si son compartidas no necesitas char)
-        directions.forEach(dir => {
-            this.load.image(`PiernaDerecha_${dir}`, `PiernaDerecha_${dir}.png`);
-            this.load.image(`PiernaIzquierda_${dir}`, `PiernaIzquierda_${dir}.png`);
-        });
-
-    });
-}
-
-    create () {
+    create() {
         let anchoCanvas = this.scale.width;
         let altoCanvas = this.scale.height;
 
@@ -658,7 +676,7 @@ export class Game extends Scene {
 
         this.placeKeys = this.input.keyboard.addKeys({ p1: Phaser.Input.Keyboard.KeyCodes.F, p2: Phaser.Input.Keyboard.KeyCodes.L });
         // ataques: jugador1 usa F, jugador2 usa L (y tecla '1' como alternativa)
-        
+
         this.input.keyboard.on('keydown-H', () => this.handleRemoveBlock(1));
         this.input.keyboard.on('keydown-I', () => this.handleRemoveBlock(2));
 
@@ -723,9 +741,93 @@ export class Game extends Scene {
         // selection keys: player1 -> F, player2 -> K
         this.input.keyboard.on('keydown-F', () => this.cycleSelection && this.cycleSelection(1));
         this.input.keyboard.on('keydown-K', () => this.cycleSelection && this.cycleSelection(2));
+        
+        // use item keys: player1 -> G, player2 -> L
+        this.input.keyboard.on('keydown-G', () => this.useItem && this.useItem(1));
+        this.input.keyboard.on('keydown-L', () => this.useItem && this.useItem(2));
     }
 
-    update (time, delta) {
+    useItem(playerIndex) {
+        const itemKey = this.getSelectedItemKey(playerIndex);
+        const rig = playerIndex === 1 ? this.player1Rig : this.player2Rig;
+        
+        if (!itemKey) return;
+        
+        if (itemKey === 'espada' || itemKey === 'pico') {
+            // Usar espada o pico como arma (atacar)
+            this.handleAttack(playerIndex);
+            // Efecto visual: destello en el personaje
+            if (rig.rightArm) {
+                this.tweens.add({
+                    targets: rig.rightArm,
+                    scaleX: 1.3,
+                    scaleY: 1.3,
+                    duration: 100,
+                    yoyo: true,
+                    ease: 'Power1'
+                });
+            }
+        } else if (itemKey === 'blockTex') {
+            // Colocar bloque
+            const player = playerIndex === 1 ? this.player1 : this.player2;
+            this.placeBlock(player, playerIndex);
+        } else if (itemKey === 'manzana') {
+            // Comer manzana (recuperar salud)
+            const oldHealth = playerIndex === 1 ? this.player1Health : this.player2Health;
+            
+            if (playerIndex === 1) {
+                this.player1Health = Math.min(8, this.player1Health + 1);
+            } else {
+                this.player2Health = Math.min(8, this.player2Health + 1);
+            }
+            
+            const newHealth = playerIndex === 1 ? this.player1Health : this.player2Health;
+            
+            // Solo mostrar efecto si la salud cambió
+            if (newHealth > oldHealth) {
+                // Efecto visual: destello verde
+                if (rig.head) {
+                    rig.head.setTint(0x00ff00);
+                    this.time.delayedCall(150, () => {
+                        if (rig.head) rig.head.clearTint();
+                    });
+                }
+                
+                // Pequeño salto
+                if (rig.anchor.body) {
+                    rig.anchor.body.setVelocityY(-200);
+                }
+                
+                // Efecto de texto flotante "+1"
+                this.createFloatingText(rig.anchor.x, rig.anchor.y - 50, '+1 ❤', 0x00ff00);
+            }
+            
+            this.refreshHealthHud();
+        }
+    }
+
+    createFloatingText(x, y, text, color) {
+        const floatingText = this.add.text(x, y, text, {
+            fontFamily: 'Arial',
+            fontSize: 24,
+            color: '#' + color.toString(16).padStart(6, '0'),
+            stroke: '#000000',
+            strokeThickness: 2
+        }).setOrigin(0.5).setDepth(200);
+        
+        this.tweens.add({
+            targets: floatingText,
+            y: y - 40,
+            alpha: 0,
+            duration: 800,
+            ease: 'Power2.Out',
+            onComplete: () => {
+                floatingText.destroy();
+            }
+        });
+    }
+
+    update(time, delta) {
         const speed = 350;
         const jumpForce = -650;
 
@@ -735,7 +837,7 @@ export class Game extends Scene {
             const minutes = Math.floor(this.timeRemaining / 60);
             const seconds = this.timeRemaining % 60;
             this.timerText.setText(`${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`);
-            
+
             if (this.timeRemaining <= 0) {
                 this.timerText.setColor('#ff0000');
                 this.timerText.setText('00:00');
@@ -825,7 +927,20 @@ export class Game extends Scene {
             this.time.delayedCall(120, () => {
                 if (typeof targetSprite.clearTint === 'function') targetSprite.clearTint();
             });
+            
+            // Efecto de sacudida (knockback visual)
+            this.tweens.add({
+                targets: targetSprite,
+                scaleX: 0.9,
+                scaleY: 0.9,
+                duration: 100,
+                yoyo: true,
+                ease: 'Power1'
+            });
         }
+
+        // Efecto de texto flotante "-1"
+        this.createFloatingText(targetRig.anchor.x, targetRig.anchor.y - 50, '-1 ❤', 0xff0000);
 
         // empujón ligero hacia afuera del atacante
         const push = 200;
@@ -852,7 +967,7 @@ export class Game extends Scene {
         const blockSize = 100;
         const direction = verticalDirection === -1 ? 'up'
             : verticalDirection === 1 ? 'down'
-            : rig.facing === 'izquierda' ? 'left' : 'right';
+                : rig.facing === 'izquierda' ? 'left' : 'right';
 
         let closestBlock = null;
         let closestMetric = Number.MAX_VALUE;
@@ -919,6 +1034,8 @@ export class Game extends Scene {
 
         const b = this.physics.add.staticImage(bx, by, 'blockTex').setOrigin(0.5);
         b.setDisplaySize(bw, bh);
+        b.setScale(0.5); // Empezar pequeño para efecto de aparición
+        
         if (b.body) {
             if (typeof b.body.setSize === 'function') b.body.setSize(bw, bh);
             if (typeof b.body.refreshBody === 'function') b.body.refreshBody();
@@ -926,6 +1043,24 @@ export class Game extends Scene {
         if (this.blocks && typeof this.blocks.add === 'function') this.blocks.add(b);
         if (this.player1) this.physics.add.collider(this.player1, b);
         if (this.player2) this.physics.add.collider(this.player2, b);
+        
+        // Efecto de aparición con escala
+        this.tweens.add({
+            targets: b,
+            scaleX: 1,
+            scaleY: 1,
+            duration: 200,
+            ease: 'Back.Out'
+        });
+        
+        // Efecto de destello amarillo
+        b.setTint(0xffff00);
+        this.time.delayedCall(200, () => {
+            if (b) b.clearTint();
+        });
+        
+        // Efecto de texto flotante "+bloque"
+        this.createFloatingText(bx, by - 60, 'BLOQUE', 0xffff00);
     }
 
     cycleSelection(playerIndex) {
