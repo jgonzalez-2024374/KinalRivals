@@ -38,24 +38,31 @@ export class Preloader extends Scene
         this.load.image('card32', '32.png');
         this.load.image('card33', '33.png');
 
-        const characterCodes = ['30', '31', '32', '33'];
-        const armSides = ['derecho', 'izquierdo'];
-        const armOrientations = ['derecha', 'frontal', 'izquierda'];
+        this.load.image('30_Torso_CaraFrontal', '30_Torso_CaraFrontal.png');
+        this.load.image('30_Torso_CaraIzquierda', '30_Torso_CaraIzquierda.png');
+        this.load.image('30_Torso_CaraDerecha', '30_Torso_CaraDerecha.png');
 
-        characterCodes.forEach((code) => {
-            this.load.image(code, `${code}.png`);
-        });
+        this.load.image('30_BrazoIzquierdo_CaraFrontal', '30_BrazoIzquierdo_CaraFrontal.png');
+        this.load.image('30_BrazoIzquierdo_CaraIzquierda', '30_BrazoIzquierdo_CaraIzquierda.png');
+        this.load.image('30_BrazoIzquierdo_CaraDerecha', '30_BrazoIzquierdo_CaraDerecha.png');
+        this.load.image('30_BrazoDerecho_CaraFrontal', '30_BrazoDerecho_CaraFrontal.png');
+        this.load.image('30_BrazoDerecho_CaraIzquierda', '30_BrazoDerecho_CaraIzquierda.png');
+        this.load.image('30_BrazoDerecho_CaraDerecha', '30_BrazoDerecho_CaraDerecha.png');
 
-        const fallbackArmCode = '30';
-        armSides.forEach((side) => {
-            armOrientations.forEach((orientation) => {
-                this.load.image(`${fallbackArmCode}_brazo_${side}_${orientation}`, `${fallbackArmCode}_brazo_${side}_${orientation}.png`);
-            });
-        });
+        this.load.image('PiernaIzquierda_CaraFrontal', 'PiernaIzquierda_CaraFrontal.png');
+        this.load.image('PiernaIzquierda_CaraIzquierda', 'PiernaIzquierda_CaraIzquierda.png');
+        this.load.image('PiernaIzquierda_CaraDerecha', 'PiernaIzquierda_CaraDerecha.png');
+        this.load.image('PiernaDerecha_CaraFrontal', 'PiernaDerecha_CaraFrontal.png');
+        this.load.image('PiernaDerecha_CaraIzquierda', 'PiernaDerecha_CaraIzquierda.png');
+        this.load.image('PiernaDerecha_CaraDerecha', 'PiernaDerecha_CaraDerecha.png');
 
-        this.load.image('Cabeza_frontal', 'Cabeza_frontal.png');
-        this.load.image('Cabeza_izquierda', 'Cabeza_izquierda.png');
-        this.load.image('Cabeza_derecha', 'Cabeza_derecha.png');
+        this.load.image('Cabeza_CaraFrontal', 'Cabeza_CaraFrontal.png');
+        this.load.image('Cabeza_CaraIzquierda', 'Cabeza_CaraIzquierda.png');
+        this.load.image('Cabeza_CaraDerecha', 'Cabeza_CaraDerecha.png');
+
+        this.load.image('Cabeza_frontal', 'Cabeza_CaraFrontal.png');
+        this.load.image('Cabeza_izquierda', 'Cabeza_CaraIzquierda.png');
+        this.load.image('Cabeza_derecha', 'Cabeza_CaraDerecha.png');
     }
 
     create ()
