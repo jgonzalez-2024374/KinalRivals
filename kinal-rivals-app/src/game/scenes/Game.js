@@ -405,13 +405,13 @@ export class Game extends Scene {
             .setScrollFactor(0)
             .setDepth(100);
 
-        this.createInventoryRow(24, altoCanvas - 34, 'left');
-        this.createInventoryRow(anchoCanvas - 24, altoCanvas - 34, 'right');
+        this.createInventoryRow(24, altoCanvas - 48, 'left');
+        this.createInventoryRow(anchoCanvas - 24, altoCanvas - 48, 'right');
     }
 
     createInventoryRow(anchorX, anchorY, side) {
-        const slotSize = 38;
-        const gap = 4;
+        const slotSize = 46;
+        const gap = 6;
         const slots = 4;
         const totalWidth = (slotSize * slots) + (gap * (slots - 1));
         const startX = side === 'left' ? anchorX : anchorX - totalWidth;
@@ -606,6 +606,29 @@ export class Game extends Scene {
         this.player2Health = 8;
     }
 
+    drawGrid(width, height, gridSize, offsetY = 0) {
+        const graphics = this.add.graphics();
+        graphics.lineStyle(1, 0xffffff, 0.3);
+        
+        // Líneas verticales
+        for (let x = 0; x <= width; x += gridSize) {
+            graphics.beginPath();
+            graphics.moveTo(x, offsetY);
+            graphics.lineTo(x, height + offsetY);
+            graphics.strokePath();
+        }
+        
+        // Líneas horizontales
+        for (let y = 0; y <= height; y += gridSize) {
+            graphics.beginPath();
+            graphics.moveTo(0, y + offsetY);
+            graphics.lineTo(width, y + offsetY);
+            graphics.strokePath();
+        }
+        
+        graphics.setDepth(1);
+    }
+
     getStageBackgroundImage(stage) {
         switch (stage) {
             case 'stage_kinal':
@@ -682,6 +705,9 @@ export class Game extends Scene {
         const fondo = this.add.image(anchoCanvas / 2, altoCanvas / 2, 'bg');
         if (fondo) fondo.setDisplaySize(anchoCanvas, altoCanvas);
 
+        // Dibujar cuadrícula de debugging
+        this.drawGrid(anchoCanvas, altoCanvas, 88, 8);
+
         const cmToPx = (cm) => Math.round(cm * (96 * (window.devicePixelRatio || 1) / 2.54));
         const groundShift = cmToPx(20);
         const extraGroundUpPx = cmToPx(5);
@@ -690,13 +716,14 @@ export class Game extends Scene {
         const maxY = altoCanvas - groundHeight / 2;
         if (posicionYSuelo > maxY) posicionYSuelo = maxY;
 
-        const blockSize = 80;
+        const blockSize = 88;
         this.groundBlockSize = blockSize;
         const rows = 2;
         const desiredGroundTopY = posicionYSuelo - (rows * blockSize) / 2 + blockSize;
         const minGroundTopY = blockSize / 2;
         const maxGroundTopY = altoCanvas - (rows * blockSize) + blockSize / 2;
-        const groundTopY = Phaser.Math.Clamp(desiredGroundTopY, minGroundTopY, maxGroundTopY);
+        let groundTopY = Phaser.Math.Clamp(desiredGroundTopY, minGroundTopY, maxGroundTopY);
+        groundTopY = Math.max(minGroundTopY, maxGroundTopY - 20);
         this.groundBlocks = this.physics.add.staticGroup();
 
         for (let row = 0; row < rows; row++) {
@@ -744,10 +771,6 @@ export class Game extends Scene {
         this.physics.add.collider(this.player2, this.blocks);
 
         this.placeKeys = this.input.keyboard.addKeys({ p1: Phaser.Input.Keyboard.KeyCodes.F, p2: Phaser.Input.Keyboard.KeyCodes.L });
-        // ataques: jugador1 usa F, jugador2 usa L (y tecla '1' como alternativa)
-
-        this.input.keyboard.on('keydown-H', () => this.handleRemoveBlock(1));
-        this.input.keyboard.on('keydown-I', () => this.handleRemoveBlock(2));
 
         this.keysWASD = this.input.keyboard.addKeys({
             up: Phaser.Input.Keyboard.KeyCodes.W,
@@ -833,9 +856,23 @@ export class Game extends Scene {
         
         if (!itemKey) return;
         
-        if (itemKey === 'espada' || itemKey === 'pico') {
-            // Usar espada o pico como arma (atacar)
+        if (itemKey === 'espada') {
+            // Usar espada para atacar
             this.handleAttack(playerIndex);
+            // Efecto visual: destello en el personaje
+            if (rig.rightArm) {
+                this.tweens.add({
+                    targets: rig.rightArm,
+                    scaleX: 1.3,
+                    scaleY: 1.3,
+                    duration: 100,
+                    yoyo: true,
+                    ease: 'Power1'
+                });
+            }
+        } else if (itemKey === 'pico') {
+            // Usar pico para quitar bloques
+            this.handleRemoveBlock(playerIndex);
             // Efecto visual: destello en el personaje
             if (rig.rightArm) {
                 this.tweens.add({
@@ -1038,13 +1075,13 @@ export class Game extends Scene {
     handleRemoveBlock(playerIndex) {
         const player = playerIndex === 1 ? this.player1 : this.player2;
         const rig = playerIndex === 1 ? this.player1Rig : this.player2Rig;
-        if (!player || !player.body || !this.groundBlocks || !rig) return;
+        if (!player || !player.body || !rig) return;
 
         const verticalDirection = playerIndex === 1
             ? this.keysWASD?.up?.isDown ? -1 : this.keysWASD?.down?.isDown ? 1 : 0
             : this.cursors?.up?.isDown ? -1 : this.cursors?.down?.isDown ? 1 : 0;
 
-        const blockSize = 100;
+        const blockSize = 88;
         const direction = verticalDirection === -1 ? 'up'
             : verticalDirection === 1 ? 'down'
                 : rig.facing === 'izquierda' ? 'left' : 'right';
@@ -1052,51 +1089,57 @@ export class Game extends Scene {
         let closestBlock = null;
         let closestMetric = Number.MAX_VALUE;
 
-        this.groundBlocks.getChildren().forEach((block) => {
-            if (!block || !block.body) return;
-            const dx = block.x - player.x;
-            const dy = block.y - player.y;
-            const absDx = Math.abs(dx);
-            const absDy = Math.abs(dy);
-
-            if (direction === 'left' && dx >= 0) return;
-            if (direction === 'right' && dx <= 0) return;
-            if (direction === 'up' && dy >= 0) return;
-            if (direction === 'down' && dy <= 0) return;
-
-            if (direction === 'left' || direction === 'right') {
-                if (absDy > blockSize * 0.8) return;
-                const metric = absDx + absDy * 0.3;
-                if (metric < closestMetric) {
-                    closestMetric = metric;
-                    closestBlock = block;
-                }
-            } else {
-                if (absDx > blockSize * 0.8) return;
-                const metric = absDy + absDx * 0.3;
-                if (metric < closestMetric) {
-                    closestMetric = metric;
-                    closestBlock = block;
-                }
-            }
-        });
-
-        if (!closestBlock) {
-            const maxDistance = 150;
-            this.groundBlocks.getChildren().forEach((block) => {
+        // Buscar solo en bloques colocados por el usuario
+        if (this.blocks) {
+            this.blocks.getChildren().forEach((block) => {
                 if (!block || !block.body) return;
                 const dx = block.x - player.x;
                 const dy = block.y - player.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                if (distance <= maxDistance && distance < closestMetric) {
-                    closestMetric = distance;
-                    closestBlock = block;
+                const absDx = Math.abs(dx);
+                const absDy = Math.abs(dy);
+
+                if (direction === 'left' && dx >= 0) return;
+                if (direction === 'right' && dx <= 0) return;
+                if (direction === 'up' && dy >= 0) return;
+                if (direction === 'down' && dy <= 0) return;
+
+                if (direction === 'left' || direction === 'right') {
+                    if (absDy > blockSize * 0.8) return;
+                    const metric = absDx + absDy * 0.3;
+                    if (metric < closestMetric) {
+                        closestMetric = metric;
+                        closestBlock = block;
+                    }
+                } else {
+                    if (absDx > blockSize * 0.8) return;
+                    const metric = absDy + absDx * 0.3;
+                    if (metric < closestMetric) {
+                        closestMetric = metric;
+                        closestBlock = block;
+                    }
                 }
             });
         }
 
-        if (closestBlock) {
-            this.groundBlocks.remove(closestBlock, true, true);
+        // Si no encontró bloques en dirección relativa, buscar los más cercanos
+        if (!closestBlock) {
+            const maxDistance = 150;
+            if (this.blocks) {
+                this.blocks.getChildren().forEach((block) => {
+                    if (!block || !block.body) return;
+                    const dx = block.x - player.x;
+                    const dy = block.y - player.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    if (distance <= maxDistance && distance < closestMetric) {
+                        closestMetric = distance;
+                        closestBlock = block;
+                    }
+                });
+            }
+        }
+
+        if (closestBlock && this.blocks) {
+            this.blocks.remove(closestBlock, true, true);
             if (closestBlock.body && typeof closestBlock.body.destroy === 'function') {
                 closestBlock.body.destroy();
             }
@@ -1105,33 +1148,68 @@ export class Game extends Scene {
 
     placeBlock(player, playerIndex) {
         if (!player || !player.body) return;
-        const bw = 100;
-        const bh = 100;
+        const gridSize = 88;
 
-        const offsetX = playerIndex === 1 ? Math.round(bw * 1.2) : -Math.round(bw * 1.2);
-        const bx = player.x + offsetX;
-        const by = player.y;
+        // Solo permitir colocar bloque si el jugador selecciona una dirección
+        const directionInput = playerIndex === 1
+            ? (this.keysWASD?.left?.isDown ? 'left'
+                : this.keysWASD?.right?.isDown ? 'right'
+                    : this.keysWASD?.up?.isDown ? 'up'
+                        : this.keysWASD?.down?.isDown ? 'down'
+                            : null)
+            : (this.cursors?.left?.isDown ? 'left'
+                : this.cursors?.right?.isDown ? 'right'
+                    : this.cursors?.up?.isDown ? 'up'
+                        : this.cursors?.down?.isDown ? 'down'
+                            : null);
 
-        const b = this.physics.add.staticImage(bx, by, 'blockTex').setOrigin(0.5);
-        b.setDisplaySize(bw, bh);
-        b.setScale(0.5); // Empezar pequeño para efecto de aparición
+        if (!directionInput) return;
+        
+        // Alinear la posición al grid (los bloques del piso empiezan en -44, no en 0)
+        const playerGridX = Math.floor((player.x + gridSize / 2) / gridSize) * gridSize - gridSize / 2;
+        const playerGridY = Math.floor((player.y + gridSize / 2) / gridSize) * gridSize - gridSize / 2;
+        
+        // Calcular posición del bloque alineada al grid
+        const blockGridX = directionInput === 'left'
+            ? playerGridX - gridSize
+            : directionInput === 'right'
+                ? playerGridX + gridSize
+                : playerGridX;
+        const blockGridY = directionInput === 'up'
+            ? playerGridY - gridSize
+            : directionInput === 'down'
+                ? playerGridY + gridSize
+                : playerGridY + gridSize + 8;
+        
+        // Verificar si ya existe un bloque en esa posición
+        let blockExists = false;
+        if (this.blocks) {
+            this.blocks.getChildren().forEach((block) => {
+                if (Math.abs(block.x - blockGridX) < 5 && Math.abs(block.y - blockGridY) < 5) {
+                    blockExists = true;
+                }
+            });
+        }
+        if (this.groundBlocks) {
+            this.groundBlocks.getChildren().forEach((block) => {
+                if (Math.abs(block.x - blockGridX) < 5 && Math.abs(block.y - blockGridY) < 5) {
+                    blockExists = true;
+                }
+            });
+        }
+        
+        if (blockExists) return;
+
+        const b = this.physics.add.staticImage(blockGridX, blockGridY, 'blockTex').setOrigin(0.5);
+        b.setDisplaySize(gridSize, gridSize);
         
         if (b.body) {
-            if (typeof b.body.setSize === 'function') b.body.setSize(bw, bh);
+            if (typeof b.body.setSize === 'function') b.body.setSize(gridSize, gridSize);
             if (typeof b.body.refreshBody === 'function') b.body.refreshBody();
         }
         if (this.blocks && typeof this.blocks.add === 'function') this.blocks.add(b);
         if (this.player1) this.physics.add.collider(this.player1, b);
         if (this.player2) this.physics.add.collider(this.player2, b);
-        
-        // Efecto de aparición con escala
-        this.tweens.add({
-            targets: b,
-            scaleX: 1,
-            scaleY: 1,
-            duration: 200,
-            ease: 'Back.Out'
-        });
         
         // Efecto de destello amarillo
         b.setTint(0xffff00);
@@ -1140,7 +1218,7 @@ export class Game extends Scene {
         });
         
         // Efecto de texto flotante "+bloque"
-        this.createFloatingText(bx, by - 60, 'BLOQUE', 0xffff00);
+        this.createFloatingText(blockGridX, blockGridY - 60, 'BLOQUE', 0xffff00);
     }
 
     cycleSelection(playerIndex) {
