@@ -459,6 +459,90 @@ export class Game extends Scene {
         }
     }
 
+    getCharacterCardTextureKey(characterName) {
+        const cardKey = `card${characterName}`;
+        if (this.textures.exists(cardKey)) {
+            return cardKey;
+        }
+
+        if (this.textures.exists(characterName)) {
+            return characterName;
+        }
+
+        return null;
+    }
+
+    showMatchResultOverlay() {
+        const isTie = this.player1Health === this.player2Health;
+        const titleText = isTie ? 'EMPATE' : '¡GANADOR!';
+        const overlay = this.add.rectangle(this.scale.width / 2, this.scale.height / 2, this.scale.width, this.scale.height, 0x000000, 0.75)
+            .setOrigin(0.5)
+            .setDepth(250)
+            .setAlpha(0);
+
+        const panel = this.add.rectangle(this.scale.width / 2, this.scale.height / 2, this.scale.width * 0.72, this.scale.height * 0.6, 0x111111, 0.95)
+            .setOrigin(0.5)
+            .setStrokeStyle(4, 0xffa500, 1)
+            .setDepth(251)
+            .setAlpha(0);
+
+        const title = this.add.text(this.scale.width / 2, this.scale.height / 2 - 190, titleText, {
+            fontFamily: 'Minecraftia',
+            fontSize: 44,
+            color: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 6
+        }).setOrigin(0.5).setDepth(252).setAlpha(0);
+
+        const resultObjects = [overlay, panel, title];
+        const cardTexture1 = this.getCharacterCardTextureKey(this.redCharacter);
+        const cardTexture2 = this.getCharacterCardTextureKey(this.greenCharacter);
+
+        if (isTie) {
+            const image1 = this.add.image(this.scale.width / 2 - 180, this.scale.height / 2 + 20, cardTexture1 || 'card30')
+                .setOrigin(0.5)
+                .setDisplaySize(220, 280)
+                .setDepth(252)
+                .setAlpha(0);
+            const image2 = this.add.image(this.scale.width / 2 + 180, this.scale.height / 2 + 20, cardTexture2 || 'card31')
+                .setOrigin(0.5)
+                .setDisplaySize(220, 280)
+                .setDepth(252)
+                .setAlpha(0);
+
+            resultObjects.push(image1, image2);
+        } else {
+            const winnerCharacter = this.player1Health > this.player2Health ? this.redCharacter : this.greenCharacter;
+            const winnerTexture = this.getCharacterCardTextureKey(winnerCharacter);
+            const winnerImage = this.add.image(this.scale.width / 2, this.scale.height / 2 + 20, winnerTexture || 'card30')
+                .setOrigin(0.5)
+                .setDisplaySize(260, 320)
+                .setDepth(252)
+                .setAlpha(0);
+            resultObjects.push(winnerImage);
+        }
+
+        this.tweens.add({
+            targets: resultObjects,
+            alpha: 1,
+            duration: 500,
+            ease: 'Power2.Out'
+        });
+
+        this.time.delayedCall(4000, () => {
+            this.tweens.add({
+                targets: resultObjects,
+                alpha: 0,
+                duration: 500,
+                ease: 'Power2.In',
+                onComplete: () => {
+                    resultObjects.forEach((obj) => obj.destroy());
+                    this.scene.start('CharacterSelect');
+                }
+            });
+        });
+    }
+
     endMatch() {
         if (this.matchEnded) return;
 
@@ -505,8 +589,7 @@ export class Game extends Scene {
                     if (this.timeOverImage) {
                         this.timeOverImage.destroy();
                     }
-                    // Volver a la escena de selección de personajes
-                    this.scene.start('CharacterSelect');
+                    this.showMatchResultOverlay();
                 }
             });
         });
@@ -548,6 +631,11 @@ export class Game extends Scene {
         this.load.image('pico', 'Pico.png');
         this.load.image('manzana', 'Manzana.png');
         this.load.image('tiempo', 'Tiempo.png');
+
+        const cardCharacters = ['26', '28', '29', '30', '31', '32', '33', 'Azul', 'Corinto', this.redCharacter, this.greenCharacter];
+        cardCharacters.filter((value, index, arr) => arr.indexOf(value) === index).forEach((characterName) => {
+            this.load.image(`card${characterName}`, `${characterName}.png`);
+        });
 
         const characters = [this.redCharacter, this.greenCharacter];
 
@@ -626,18 +714,13 @@ export class Game extends Scene {
         const raiseY = Math.round(altoCanvas * 0.18);
         const maxRaisePossible = Math.max(0, posicionYSuelo - playerOffsetY - 50);
         const finalRaiseY = Math.min(raiseY, maxRaisePossible);
-        const initialRaiseY = posicionYSuelo - playerOffsetY - finalRaiseY - 60;
+        const initialRaiseY = Math.max(groundTopY - 340, posicionYSuelo - playerOffsetY - finalRaiseY - 180);
 
         this.player1Rig = this.createCharacterRig(this.redCharacter, anchoCanvas * 0.25, initialRaiseY, 0xff6666);
         this.player2Rig = this.createCharacterRig(this.greenCharacter, anchoCanvas * 0.75, initialRaiseY, 0x66ff66);
 
-        const playerBlockTopY = groundTopY - blockSize / 2;
-        const playerBodyHalfHeight1 = this.player1Rig.anchor.body ? this.player1Rig.anchor.body.height / 2 : 90;
-        const playerBodyHalfHeight2 = this.player2Rig.anchor.body ? this.player2Rig.anchor.body.height / 2 : 90;
-        const standingY1 = playerBlockTopY - playerBodyHalfHeight1 + 2;
-        const standingY2 = playerBlockTopY - playerBodyHalfHeight2 + 2;
-        this.player1Rig.anchor.setPosition(anchoCanvas * 0.25, standingY1);
-        this.player2Rig.anchor.setPosition(anchoCanvas * 0.75, standingY2);
+        this.player1Rig.anchor.setPosition(anchoCanvas * 0.25, initialRaiseY);
+        this.player2Rig.anchor.setPosition(anchoCanvas * 0.75, initialRaiseY);
 
         this.player1 = this.player1Rig.anchor;
         this.player2 = this.player2Rig.anchor;
@@ -645,30 +728,16 @@ export class Game extends Scene {
         if (this.player1.body) {
             this.player1.body.allowGravity = false;
             this.player1.body.setVelocity(0, 0);
+            this.player1.body.reset(this.player1.x, this.player1.y);
         }
         if (this.player2.body) {
             this.player2.body.allowGravity = false;
             this.player2.body.setVelocity(0, 0);
+            this.player2.body.reset(this.player2.x, this.player2.y);
         }
 
         this.physics.add.collider(this.player1, this.groundBlocks);
         this.physics.add.collider(this.player2, this.groundBlocks);
-
-        this.time.delayedCall(50, () => {
-            this.player2.setPosition(anchoCanvas * 0.75, this.player1.y);
-            if (this.player2.body && this.player2.body.reset) this.player2.body.reset(this.player2.x, this.player2.y);
-            if (this.player1.body && this.player1.body.reset) this.player1.body.reset(this.player1.x, this.player1.y);
-            if (this.player1.body) {
-                this.player1.body.setVelocity(0, 0);
-                this.player1.body.allowGravity = true;
-            }
-            if (this.player2.body) {
-                this.player2.body.setVelocity(0, 0);
-                this.player2.body.allowGravity = true;
-            }
-            this.updateCharacterRig(this.player1Rig, 0, true);
-            this.updateCharacterRig(this.player2Rig, 0, true);
-        });
 
         this.blocks = this.physics.add.staticGroup();
         this.physics.add.collider(this.player1, this.blocks);
@@ -736,6 +805,17 @@ export class Game extends Scene {
             this.timerText.setText('02:00');
             this.timerText.setFontSize(48);
             this.lastTimeUpdate = this.game.getTime();
+
+            if (this.player1 && this.player1.body) {
+                this.player1.body.setVelocity(0, 0);
+                this.player1.body.allowGravity = true;
+                this.player1.body.reset(this.player1.x, this.player1.y);
+            }
+            if (this.player2 && this.player2.body) {
+                this.player2.body.setVelocity(0, 0);
+                this.player2.body.allowGravity = true;
+                this.player2.body.reset(this.player2.x, this.player2.y);
+            }
         });
 
         // selection keys: player1 -> F, player2 -> K
